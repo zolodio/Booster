@@ -377,10 +377,12 @@ function buildSlots(){
 }
 
 function openPicker(forceR=null){
-  pickerRarity=forceR||'all';pickerQ='';
+  pickerRarity = 'all'; // force reset
+  pickerQ = '';
   $('pk-search').value='';
   $('picker-modal').classList.add('open');
-  buildPkFilters();buildPkGrid();
+  buildPkFilters();
+  buildPkGrid();
   setTimeout(()=>$('pk-search').focus(),200);
 }
 function closePicker(){$('picker-modal').classList.remove('open');pickerSlot=-1}
@@ -503,7 +505,10 @@ function buildPackVisual(pt){
       </div>
     </div>
     <div class="pack-body" style="background:linear-gradient(160deg,${pt.c1} 0%,${pt.c2} 50%,${pt.c3} 100%)">
-      <div class="p-art"></div>
+    <div class="p-art">
+    <img src="https://raw.githubusercontent.com/zolodio/Avatar-TCG-Database/main/BSTR001.jpg" 
+       style="width:100%;height:100%;object-fit:cover;">
+     </div>
       <div class="p-foil"></div>
       <div class="p-glow"></div>
       <div class="p-circle" style="width:200px;height:200px;top:-60px;right:-80px;background:${pt.acc}"></div>
@@ -600,7 +605,10 @@ function buildSpread(){
     el.dataset.idx=i;
     el.innerHTML=`
       <div class="sc-inner">
-        <div class="sc-back"></div>
+<div class="sc-back">
+  <img src="https://raw.githubusercontent.com/zolodio/Avatar-TCG-Database/main/cardback.jpg" 
+       style="width:100%;height:100%;object-fit:cover;">
+</div>
         <div class="sc-face">
           ${card.imageLink?`<img src="${escH(card.imageLink)}" alt="${escH(card.name)}" loading="lazy">`:`<div class="sc-face-ph">?</div>`}
           <div class="rarity-ribbon r-${card.type==='chamber'?'chamber':card.rarity}">${card.type==='chamber'?'Chamber':card.rarity}</div>

@@ -270,12 +270,10 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:var(--bg);
 const CSV_URL = 'https://raw.githubusercontent.com/zolodio/Avatar-TCG-Database/main/Extended%20Database.csv';
 
 const PACKS = [
-  {id:'BSTR001',name:'Booster Pack 1',sub:'Water & Fire',icon:'🌊🔥',c1:'#0a1428',c2:'#1a0820',c3:'#0a1028',acc:'#2e8ce8'},
-  {id:'BSTR002',name:'Booster Pack 2',sub:'Earth & Air', icon:'🌿💨',c1:'#0d2015',c2:'#1a1800',c3:'#0a1810',acc:'#5cb85c'},
-  {id:'BSTR003',name:'Collector Box', sub:'All Elements',icon:'✨',    c1:'#180d2e',c2:'#0d1838',c3:'#200d1a',acc:'#b44ddf'},
+  {id:'BSTR001',name:'Foil Pack',sub:'Water & Fire',icon:'🔥',c1:'#0a1428',c2:'#1a0820',c3:'#0a1028',acc:'#2e8ce8'},
   {id:'CUSTOM', name:'Custom Pack',   sub:'Your Design', icon:'🎨',    c1:'#16101e',c2:'#0e1628',c3:'#16101e',acc:'#e8b632'},
 ];
-const SYMS = {BSTR001:['🌊','🔥','💧'],BSTR002:['🌿','💨','🌱'],BSTR003:['✨','⭐','💫'],CUSTOM:['🔮','✨','🌀']};
+const SYMS = {BSTR001:['🌊','🔥','💧'],CUSTOM:['🔮','✨','🌀']};
 const RC = {common:'#8b8fa8',uncommon:'#5cb85c',rare:'#2e8ce8',zenemental:'#b44ddf',promo:'#e8b632'};
 
 let allCards=[], packType='BSTR001', slots=Array(10).fill(null);
@@ -300,7 +298,18 @@ function decPack(code){
     return o;
   }catch(e){return null}
 }
+function isValidForSlot(card, slotIndex){
+  const num = parseInt(card.number, 10);
+  if (isNaN(num)) return false;
 
+  if (slotIndex === 9) {
+    // Chamber slot
+    return num >= 176 && num <= 235;
+  } else {
+    // Regular slots
+    return num >= 1 && num <= 175;
+  }
+}
 function parseCSV(text){
   const lines=text.replace(/\r/g,'').split('\n').filter(l=>l.trim());
   if(lines.length<2)return[];
@@ -377,18 +386,56 @@ function openPicker(forceR=null){
 function closePicker(){$('picker-modal').classList.remove('open');pickerSlot=-1}
 
 function buildPkFilters(){
-  const filters=[{id:'all',lbl:'All'},{id:'common',lbl:'Common',cls:'fc'},{id:'uncommon',lbl:'Uncommon',cls:'fc'},{id:'rare',lbl:'Rare',cls:'fr'},{id:'zenemental',lbl:'Zenemental',cls:'fz'},{id:'promo',lbl:'Promo',cls:'fp'},{id:'chamber',lbl:'Chamber',cls:'fch'}];
-  $('pk-filters').innerHTML=filters.map(f=>`<button class="pf ${f.cls||''}${pickerRarity===f.id?' act':''}" data-r="${f.id}">${f.lbl}</button>`).join('');
-  $('pk-filters').querySelectorAll('.pf').forEach(el=>el.addEventListener('click',()=>{pickerRarity=el.dataset.r;buildPkFilters();buildPkGrid()}));
+  const isChamberSlot = pickerSlot === 9;
+
+  let filters;
+
+  if (isChamberSlot) {
+    // Chamber filters
+    filters = [
+      {id:'all',lbl:'All'},
+      {id:'common',lbl:'Common',cls:'fc'},
+      {id:'uncommon',lbl:'Uncommon',cls:'fc'},
+      {id:'rare',lbl:'Rare',cls:'fr'},
+    ];
+  } else {
+    // Regular card filters
+    filters = [
+      {id:'all',lbl:'All'},
+      {id:'common',lbl:'Common',cls:'fc'},
+      {id:'uncommon',lbl:'Uncommon',cls:'fc'},
+      {id:'rare',lbl:'Rare',cls:'fr'},
+      {id:'zenemental',lbl:'Zenemental',cls:'fz'},
+    ];
+  }
+
+  $('pk-filters').innerHTML = filters.map(f =>
+    `<button class="pf ${f.cls||''}${pickerRarity===f.id?' act':''}" data-r="${f.id}">${f.lbl}</button>`
+  ).join('');
+
+  $('pk-filters').querySelectorAll('.pf').forEach(el =>
+    el.addEventListener('click', () => {
+      pickerRarity = el.dataset.r;
+      buildPkFilters();
+      buildPkGrid();
+    })
+  );
 }
 
 function buildPkGrid(){
   const q=pickerQ.toLowerCase();
-  let cards=allCards.filter(c=>{
-    if(q&&c.name.toLowerCase().indexOf(q)===-1&&c.number.toLowerCase().indexOf(q)===-1)return false;
-    if(pickerRarity!=='all'){if(pickerRarity==='chamber')return c.type==='chamber';return c.rarity===pickerRarity;}
-    return true;
-  });
+let cards = allCards.filter(c=>{
+  if (pickerSlot >= 0 && !isValidForSlot(c, pickerSlot)) return false;
+
+  if(q && c.name.toLowerCase().indexOf(q)===-1 && c.number.toLowerCase().indexOf(q)===-1) return false;
+
+  if(pickerRarity!=='all'){
+    if(pickerRarity==='chamber') return c.type==='chamber';
+    return c.rarity===pickerRarity;
+  }
+
+  return true;
+});
   const grid=$('pk-grid');
   if(cards.length===0){grid.innerHTML='<div class="pk-none">No cards found</div>';return;}
   grid.innerHTML=cards.slice(0,200).map(c=>{
@@ -400,21 +447,44 @@ function buildPkGrid(){
       <div class="pk-num">#${escH(c.number)}</div>
     </div>`;
   }).join('');
-  grid.querySelectorAll('.pk-item').forEach(el=>{
-    el.addEventListener('click',()=>{
-      const card=allCards.find(c=>c.number===el.dataset.num);
-      if(!card||pickerSlot<0)return;
-      slots[pickerSlot]=card;buildSlots();closePicker();
-    });
+grid.querySelectorAll('.pk-item').forEach(el=>{
+  el.addEventListener('click',()=>{
+    const card = allCards.find(c => c.number === el.dataset.num);
+    if (!card || pickerSlot < 0) return;
+
+    if (!isValidForSlot(card, pickerSlot)) {
+      toast(pickerSlot === 9 
+        ? 'Chamber must be #176–235' 
+        : 'Cards must be #1–175');
+      return;
+    }
+
+    slots[pickerSlot] = card;
+    buildSlots();
+    closePicker();
   });
+});
 }
 
 function randomize(){
-  const reg=allCards.filter(c=>c.type!=='chamber');
-  const chs=allCards.filter(c=>c.type==='chamber');
-  const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
-  for(let i=0;i<9;i++)slots[i]=pick(reg);
-  slots[9]=chs.length?pick(chs):pick(reg);
+  const reg = allCards.filter(c => {
+    const num = parseInt(c.number, 10);
+    return num >= 1 && num <= 175;
+  });
+
+  const chs = allCards.filter(c => {
+    const num = parseInt(c.number, 10);
+    return num >= 176 && num <= 235;
+  });
+
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  for(let i = 0; i < 9; i++) {
+    slots[i] = pick(reg);
+  }
+
+  slots[9] = chs.length ? pick(chs) : null;
+
   buildSlots();
 }
 

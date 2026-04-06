@@ -178,13 +178,7 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:var(--bg);
   height:100%;
   align-items:center;
 }
-#spread-stage{
-  scroll-snap-type:x mandatory;
-}
 
-.sc{
-  scroll-snap-align:center;
-}
 .sc{position:relative;flex:0 0 auto;cursor:pointer;transition:transform .2s}
 .sc-inner{width:100%;aspect-ratio:3/4;position:relative;transform-style:preserve-3d;transition:transform .62s cubic-bezier(.4,0,.2,1)}
 .sc.flipped .sc-inner{transform:rotateY(180deg)}
@@ -640,7 +634,26 @@ function buildSpread(){
   $('open-again').addEventListener('click',()=>{flipped.clear();showScreen('s-setup');phase='sealed'});
   $('share-result').addEventListener('click',shareExp);
 }
+function enterFullscreenScroll(){
+  const cards = document.querySelectorAll('.sc');
 
+  const spread = $('spread-stage');
+  spread.style.overflowX = 'auto';
+  spread.style.overflowY = 'hidden';
+
+  const row = $('cards-row');
+  row.style.flexWrap = 'nowrap';
+  row.style.width = 'max-content';
+  row.style.height = '100%';
+  row.style.alignItems = 'center';
+
+  const w = Math.min(window.innerWidth * 0.75, 340);
+
+  cards.forEach(card=>{
+    card.style.width = w + 'px';
+    card.style.flex = '0 0 auto';
+  });
+}
 function flipCard(el,card,i){
   if(flipped.has(i))return;
   flipped.add(i);
@@ -654,7 +667,8 @@ function flipCard(el,card,i){
     }
   },310);
   const rc=$('rev-count');if(rc)rc.textContent=flipped.size;
-  if(flipped.size===packData.cards.length)setTimeout(()=>{const d=$('done-acts');if(d)d.classList.add('show')},700);
+  if(flipped.size===packData.cards.length)setTimeout(()=>{const d=$('done-acts');if(d)d.classList.add('show');
+  enterFullscreenScroll();},700);
 }
 
 // CONFETTI

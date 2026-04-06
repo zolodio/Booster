@@ -133,49 +133,12 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 
 .pack-wrap{display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative}
 
-.pack-top{width:200px;height:60px;position:relative;border-radius:12px 12px 0 0;overflow:hidden;  clip-path: polygon(
-    0% 0%,
-    100% 0%,
-    100% 58%,
-    94% 74%,
-    88% 56%,
-    82% 79%,
-    76% 55%,
-    70% 81%,
-    64% 57%,
-    58% 76%,
-    50% 59%,
-    43% 82%,
-    37% 58%,
-    30% 75%,
-    24% 56%,
-    18% 80%,
-    12% 57%,
-    6% 77%,
-    0% 60%
-  );transform-origin:top center;transition:transform .55s cubic-bezier(.4,0,.2,1),opacity .45s ease;box-shadow:0 -4px 20px rgba(0,0,0,.4)}
+/* ── clip-path is NOT present here — the pack top looks like a normal rectangle until torn ── */
+.pack-top{width:200px;height:60px;position:relative;border-radius:12px 12px 0 0;overflow:hidden;transform-origin:top center;transition:transform .55s cubic-bezier(.4,0,.2,1),opacity .45s ease;box-shadow:0 -4px 20px rgba(0,0,0,.4)}
+/* ── .torn is added by JS at the moment of the tear, revealing the jagged edge ── */
+.pack-top.torn{clip-path:polygon(0% 0%,100% 0%,100% 58%,94% 74%,88% 56%,82% 79%,76% 55%,70% 81%,64% 57%,58% 76%,50% 59%,43% 82%,37% 58%,30% 75%,24% 56%,18% 80%,12% 57%,6% 77%,0% 60%)}
 .pack-top.fly{transform:translateY(-200px) translateX(50px) rotate(28deg) scale(0.55);opacity:0}
-.pack-body{width:200px;height:280px;border-radius:0 0 12px 12px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);  clip-path: polygon(
-    0% 100%, 
-    6% 42%, 
-    12% 22%, 
-    18% 20%, 
-    24% 43%, 
-    30% 22%, 
-    37% 44%, 
-    43% 21%, 
-    50% 41%, 
-    56% 22%, 
-    62% 44%, 
-    68% 20%, 
-    75% 43%, 
-    81% 22%, 
-    87% 44%, 
-    93% 20%, 
-    100% 42%, 
-    100% 100%, 
-    0% 100%
-  );}
+.pack-body{width:200px;height:280px;border-radius:0 0 12px 12px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);}
 .p-art{position:absolute;inset:0}
 .p-foil{position:absolute;inset:0;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.1) 50%,transparent 80%);background-size:300% 100%;animation:foil 4.5s ease-in-out infinite;mix-blend-mode:overlay;pointer-events:none}
 @keyframes foil{0%{background-position:200% 0}50%{background-position:-100% 0}100%{background-position:200% 0}}
@@ -242,18 +205,6 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 }
 .spread-prog span{color:var(--zen);font-weight:700}
 
-/*
-  ─── CARD GRID ───
-  5 columns. Regular cards: 5:7 portrait. Chamber card: 11:27 (tall portrait).
-
-  --cw is the column width, computed as the smaller of:
-    • (viewport width  − 36px padding/gaps) ÷ 5
-    • (viewport height − 114px chrome)      ÷ 3.854
-      where 3.854 = row1_ratio(1.4) + row2_ratio(2.454), i.e. the
-      tallest possible stacked height for one column unit.
-
-  This guarantees both rows always fit on screen regardless of device.
-*/
 .cards-grid{
   flex:1;
   min-height:0;
@@ -289,7 +240,6 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 .done-acts.show{opacity:1;pointer-events:all}
 
 /* ─── CARD BASE ─── */
-/* aspect-ratio:5/7 = standard 2.5"×3.5" TCG portrait. */
 .sc{
   width:100%;
   aspect-ratio:5/7;
@@ -330,15 +280,11 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 .sc-face img{width:100%;height:100%;object-fit:cover;display:block;}
 .sc-face-ph{width:100%;height:100%;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--txt3);font-size:.7rem}
 
-/* ─── CHAMBER CARD ───
-   11:27 = extremely tall portrait (≈ 0.41 ratio, nearly 2× taller than regular).
-   Sits in a single column — its height determines row 2's height,
-   with regular cards in that row appearing shorter beside it. */
+/* ─── CHAMBER CARD ─── */
 .sc.chamber-card{
   aspect-ratio:11/27;
 }
 
-/* Chamber back & front styling */
 .sc.chamber-card .sc-back::after{display:none}
 .sc.chamber-card .sc-back::before{display:none}
 .sc.chamber-card .sc-back{
@@ -721,6 +667,8 @@ function onSealedClick(){
 
 function doTear(){
   phase='opening';
+  // Apply the jagged tear shape only now — on first click
+  $('pack-top').classList.add('torn');
   $('pack-top').classList.add('fly');
   const hint=$('hint-txt');
   if(hint)hint.style.display='none';

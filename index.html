@@ -139,60 +139,10 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:var(--bg);
 .p-tear-hint{position:absolute;top:0;left:0;right:0;pointer-events:none}
 .p-tear-line{width:100%;height:1px;border-top:1px dashed rgba(255,255,255,.22);position:absolute;top:44px}
 .p-tear-txt{position:absolute;top:46px;left:0;right:0;text-align:center;font-size:.42rem;color:rgba(255,255,255,.25);letter-spacing:.2em;text-transform:uppercase}
-.pack-peek{
-  position:absolute;
-  bottom:-6px;
-  left:50%;
-  transform:translateX(-50%);
-  display:flex;
-  gap:3px;
-  opacity:0;
-  transition:opacity .4s ease,bottom .4s ease;
-  z-index:0;
-  pointer-events:none;
-}
-
-.pack-peek.show{
-  opacity:1;
-  bottom:-18px;
-}
+.pack-peek{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);display:flex;gap:3px;opacity:0;transition:opacity .4s .5s,bottom .4s .5s;z-index:0;pointer-events:none}
 .pack-peek.show{opacity:1;bottom:-16px}
-.peek-c{
-  width:34px;
-  height:46px;
-  border-radius:4px;
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.15);
-  transform:translateY(10px) scale(.9);
-  opacity:0;
-  animation:peekIn .5s ease forwards;
-}
+.peek-c{width:34px;height:46px;background:linear-gradient(135deg,#120828,#0d1848);border:1px solid rgba(255,255,255,.12);border-radius:4px}
 
-.peek-c img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-
-/* stagger animation */
-.peek-c:nth-child(1){animation-delay:.1s}
-.peek-c:nth-child(2){animation-delay:.18s}
-.peek-c:nth-child(3){animation-delay:.26s}
-.peek-c:nth-child(4){animation-delay:.34s}
-.peek-c:nth-child(5){animation-delay:.42s}
-.peek-c:nth-child(6){animation-delay:.5s}
-
-@keyframes peekIn{
-  to{
-    transform:translateY(0) scale(1);
-    opacity:1;
-  }
-}
-.peek-c.chamber{
-  border:1px solid rgba(240,201,70,.8);
-  box-shadow:0 0 8px rgba(240,201,70,.6);
-  transform:translateY(6px) scale(1.05);
-}
 .pack-wrap.floating{animation:pfloat 3s ease-in-out infinite}
 @keyframes pfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .pack-wrap.shaking{animation:pshake .4s cubic-bezier(.36,.07,.19,.97)}
@@ -238,30 +188,7 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:var(--bg);
 .sc-back::after{content:'';width:55%;height:55%;border:1.5px solid rgba(255,255,255,.09);border-radius:50%;background:radial-gradient(circle,rgba(74,125,255,.07) 0%,transparent 70%)}
 .sc-back::before{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.06) 50%,transparent 70%);background-size:300% 100%;animation:foil 3.5s ease-in-out infinite}
 .sc-face{transform:rotateY(180deg)}
-.sc-face img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block
-}
-.sc.type-chamber{
-  transform:scale(1.05);
-}
-
-.sc.type-chamber .sc-inner{
-  border:2px solid rgba(240,201,70,.6);
-  border-radius:10px;
-}
-.sc.type-chamber .sc-back{
-  box-shadow:0 0 20px rgba(240,201,70,.4);
-}
-.sc.type-chamber.flipped{
-  transform:scale(1.08);
-}
-.sc.type-chamber .sc-face img{
-  object-fit:contain;
-  background:#000; /* optional for letterboxing */
-}
+.sc-face img{width:100%;height:100%;object-fit:cover;display:block}
 .sc-face-ph{width:100%;height:100%;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--txt3);font-size:.7rem}
 
 .sc.entry{animation:cardIn .45s cubic-bezier(.34,1.3,.64,1) both}
@@ -607,19 +534,7 @@ function buildPackVisual(pt){
       <div class="p-sym s3">${syms[2]}</div>
       <div class="p-center-icon">${pt.icon}</div>
     </div>
-    const peekCards = (packData?.cards || []).slice(0,6);
-
-<div class="pack-peek" id="pack-peek">
-  ${peekCards.map(c => `
-    <div class="peek-c ${c.type==='chamber' ? 'chamber' : ''}">
-      <img 
-        src="${c.type==='chamber' && c.backImageLink 
-          ? escH(c.backImageLink) 
-          : 'https://raw.githubusercontent.com/zolodio/Avatar-TCG-Database/main/cardback.jpg'}"
-      >
-    </div>
-  `).join('')}
-</div>
+    <div class="pack-peek" id="pack-peek">${Array(6).fill('<div class="peek-c"></div>').join('')}</div>
   </div>
 </div>
 <div class="hint-txt" id="hint-txt">Tap pack to open</div>`;
@@ -652,12 +567,9 @@ function doTear(){
   $('pack-top').classList.add('fly');
   const hint=$('hint-txt');
   if(hint)hint.style.display='none';
-setTimeout(()=>{
-  const peek=$('pack-peek');
-  if(peek){
-    peek.classList.add('show');
-  }
-},500);
+  setTimeout(()=>{
+    const peek=$('pack-peek');if(peek)peek.classList.add('show');
+  },380);
   setTimeout(()=>{
     const stage=$('pack-stage');
     const btn=document.createElement('button');
@@ -700,16 +612,16 @@ function buildSpread(){
 
   cards.forEach((card,i)=>{
     const el=document.createElement('div');
-    el.className='sc entry' + (card.type==='chamber' ? ' type-chamber' : '');
+    el.className='sc entry';
     el.style.width=w+'px';
     el.style.animationDelay=(i*55)+'ms';
     el.dataset.idx=i;
     el.innerHTML=`
       <div class="sc-inner">
-      <div class="sc-back">
-      <img src="${card.type==='chamber' && card.backImageLink ? escH(card.backImageLink) : 'https://raw.githubusercontent.com/zolodio/Avatar-TCG-Database/main/cardback.jpg'}"
+<div class="sc-back">
+  <img src="https://raw.githubusercontent.com/zolodio/Avatar-TCG-Database/main/cardback.jpg" 
        style="width:100%;height:100%;object-fit:cover;">
-      </div>
+</div>
         <div class="sc-face">
           ${card.imageLink?`<img src="${escH(card.imageLink)}" alt="${escH(card.name)}" loading="lazy">`:`<div class="sc-face-ph">?</div>`}
           <div class="rarity-ribbon r-${card.type==='chamber'?'chamber':card.rarity}">${card.type==='chamber'?'Chamber':card.rarity}</div>
@@ -722,26 +634,7 @@ function buildSpread(){
   $('open-again').addEventListener('click',()=>{flipped.clear();showScreen('s-setup');phase='sealed'});
   $('share-result').addEventListener('click',shareExp);
 }
-function enterFullscreenScroll(){
-  const cards = document.querySelectorAll('.sc');
 
-  const spread = $('spread-stage');
-  spread.style.overflowX = 'auto';
-  spread.style.overflowY = 'hidden';
-
-  const row = $('cards-row');
-  row.style.flexWrap = 'nowrap';
-  row.style.width = 'max-content';
-  row.style.height = '100%';
-  row.style.alignItems = 'center';
-
-  const w = Math.min(window.innerWidth * 0.75, 340);
-
-  cards.forEach(card=>{
-    card.style.width = w + 'px';
-    card.style.flex = '0 0 auto';
-  });
-}
 function flipCard(el,card,i){
   if(flipped.has(i))return;
   flipped.add(i);
@@ -755,8 +648,7 @@ function flipCard(el,card,i){
     }
   },310);
   const rc=$('rev-count');if(rc)rc.textContent=flipped.size;
-  if(flipped.size===packData.cards.length)setTimeout(()=>{const d=$('done-acts');if(d)d.classList.add('show');
-  enterFullscreenScroll();},700);
+  if(flipped.size===packData.cards.length)setTimeout(()=>{const d=$('done-acts');if(d)d.classList.add('show')},700);
 }
 
 // CONFETTI

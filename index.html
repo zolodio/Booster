@@ -188,7 +188,30 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:var(--bg);
 .sc-back::after{content:'';width:55%;height:55%;border:1.5px solid rgba(255,255,255,.09);border-radius:50%;background:radial-gradient(circle,rgba(74,125,255,.07) 0%,transparent 70%)}
 .sc-back::before{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.06) 50%,transparent 70%);background-size:300% 100%;animation:foil 3.5s ease-in-out infinite}
 .sc-face{transform:rotateY(180deg)}
-.sc-face img{width:100%;height:100%;object-fit:cover;display:block}
+.sc-face img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block
+}
+.sc.type-chamber{
+  transform:scale(1.05);
+}
+
+.sc.type-chamber .sc-inner{
+  border:2px solid rgba(240,201,70,.6);
+  border-radius:10px;
+}
+.sc.type-chamber .sc-back{
+  box-shadow:0 0 20px rgba(240,201,70,.4);
+}
+.sc.type-chamber.flipped{
+  transform:scale(1.08);
+}
+.sc.type-chamber .sc-face img{
+  object-fit:contain;
+  background:#000; /* optional for letterboxing */
+}
 .sc-face-ph{width:100%;height:100%;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--txt3);font-size:.7rem}
 
 .sc.entry{animation:cardIn .45s cubic-bezier(.34,1.3,.64,1) both}
@@ -612,16 +635,16 @@ function buildSpread(){
 
   cards.forEach((card,i)=>{
     const el=document.createElement('div');
-    el.className='sc entry';
+    el.className='sc entry' + (card.type==='chamber' ? ' type-chamber' : '');
     el.style.width=w+'px';
     el.style.animationDelay=(i*55)+'ms';
     el.dataset.idx=i;
     el.innerHTML=`
       <div class="sc-inner">
-<div class="sc-back">
-  <img src="https://raw.githubusercontent.com/zolodio/Avatar-TCG-Database/main/cardback.jpg" 
+      <div class="sc-back">
+      <img src="${card.type==='chamber' && card.backImageLink ? escH(card.backImageLink) : 'https://raw.githubusercontent.com/zolodio/Avatar-TCG-Database/main/cardback.jpg'}"
        style="width:100%;height:100%;object-fit:cover;">
-</div>
+      </div>
         <div class="sc-face">
           ${card.imageLink?`<img src="${escH(card.imageLink)}" alt="${escH(card.name)}" loading="lazy">`:`<div class="sc-face-ph">?</div>`}
           <div class="rarity-ribbon r-${card.type==='chamber'?'chamber':card.rarity}">${card.type==='chamber'?'Chamber':card.rarity}</div>

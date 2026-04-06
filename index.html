@@ -216,6 +216,10 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:var(--bg);
   align-items:center;
   justify-content:flex-start;
   padding-top:60px;
+  cursor: grab;
+}
+#spread-stage.dragging{
+  cursor: grabbing;
 }
 .spread-prog{position:absolute;top:58px;left:50%;transform:translateX(-50%);font-size:.7rem;color:var(--txt3);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;text-align:center}
 .spread-prog span{color:var(--zen);font-weight:700}
@@ -684,7 +688,42 @@ function pullCards(){
 
 function buildSpread(){
   const cards=packData.cards;
-  const spread=$('spread-stage');
+const spread = $('cards-row');
+spread.style.scrollBehavior = 'smooth';
+spread.addEventListener('wheel', (e) => {
+  if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+    e.preventDefault();
+    spread.scrollLeft += e.deltaY;
+  }
+}, { passive: false });
+let isDown = false;
+let startX;
+let scrollLeft;
+
+spread.addEventListener('mousedown', (e) => {
+  isDown = true;
+  spread.classList.add('dragging');
+  startX = e.pageX - spread.offsetLeft;
+  scrollLeft = spread.scrollLeft;
+});
+
+spread.addEventListener('mouseleave', () => {
+  isDown = false;
+  spread.classList.remove('dragging');
+});
+
+spread.addEventListener('mouseup', () => {
+  isDown = false;
+  spread.classList.remove('dragging');
+});
+
+spread.addEventListener('mousemove', (e) => {
+  if (!isDown) return;
+  e.preventDefault();
+  const x = e.pageX - spread.offsetLeft;
+  const walk = (x - startX) * 1.4; // speed multiplier
+  spread.scrollLeft = scrollLeft - walk;
+});
   spread.innerHTML=`
     <div class="spread-prog">Flip cards to reveal — <span id="rev-count">0</span> / ${cards.length} revealed</div>
     <div class="cards-row" id="cards-row"></div>
@@ -697,6 +736,8 @@ function buildSpread(){
   // Determine card size based on count
   const total=cards.length;
   const w = Math.min(window.innerWidth * 0.75, 320);
+  const containerWidth = window.innerWidth;
+const sidePad = (containerWidth - w) / 2;
 
   cards.forEach((card,i)=>{
     const el=document.createElement('div');
@@ -721,6 +762,10 @@ function buildSpread(){
 
   $('open-again').addEventListener('click',()=>{flipped.clear();showScreen('s-setup');phase='sealed'});
   $('share-result').addEventListener('click',shareExp);
+  requestAnimationFrame(() => {
+  const spread = $('spread-stage');
+  spread.scrollLeft = 0;
+});
 }
 function enterFullscreenScroll(){
   const cards = document.querySelectorAll('.sc');
@@ -737,9 +782,22 @@ function enterFullscreenScroll(){
 
   const w = Math.min(window.innerWidth * 0.75, 340);
 
+  // ✅ ADD THIS BLOCK RIGHT HERE
+  const containerWidth = window.innerWidth;
+  const sidePad = (containerWidth - w) / 2;
+
+  row.style.paddingLeft = sidePad + 'px';
+  row.style.paddingRight = sidePad + 'px';
+
+  // ✅ KEEP THIS AFTER (order matters)
   cards.forEach(card=>{
     card.style.width = w + 'px';
     card.style.flex = '0 0 auto';
+  });
+
+  // ✅ ALSO force scroll reset again (important)
+  requestAnimationFrame(() => {
+    spread.scrollLeft = 0;
   });
 }
 function flipCard(el,card,i){

@@ -178,7 +178,13 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:var(--bg);
   height:100%;
   align-items:center;
 }
+#spread-stage{
+  scroll-snap-type:x mandatory;
+}
 
+.sc{
+  scroll-snap-align:center;
+}
 .sc{position:relative;flex:0 0 auto;cursor:pointer;transition:transform .2s}
 .sc-inner{width:100%;aspect-ratio:3/4;position:relative;transform-style:preserve-3d;transition:transform .62s cubic-bezier(.4,0,.2,1)}
 .sc.flipped .sc-inner{transform:rotateY(180deg)}

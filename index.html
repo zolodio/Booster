@@ -131,10 +131,6 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 
 .pack-wrap{display:flex;flex-direction:column;align-items:center;position:relative}
 
-/*
-  pack-container: stacking context for top / peek / body layers
-  NO overflow:hidden here so peek can protrude upward outside pack-body
-*/
 .pack-container{
   position:relative;
   display:flex;
@@ -176,50 +172,25 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 }
 
 /*
-  ── Peek: absolute inside pack-container, z-index 2 (above body, below top)
-  
-  Cards are the same width as the pack (200px total, 5 cards with tiny gaps).
-  They sit so their tops protrude ~22px above pack-body's top edge (y=60).
-  pack-top (z-index:3, height:60px) hides the protrusion until it flies away.
-  After top flies: ~22px of each card top is visible above the body opening.
-
-  bottom: 0 means card bottoms align with pack-container bottom, which means
-  cards extend upward into the body — exactly like cards sitting in a sleeve.
-  We control how much peeks out by adjusting the container's top offset.
-  
-  Simpler: position peek so card tops start at ~38px from container top.
-  Cards are 200px wide (full pack width), tall enough to look like real cards.
+  ── Card inside pack: sits at the top of pack-body, full width.
+  pack-body has overflow:hidden, so the card is clipped exactly like
+  a real card inside a foil sleeve. After the top tears off, the top
+  of the card back is revealed — same width as the pack opening.
 */
-.pack-peek{
+.card-in-pack{
   position:absolute;
-  /* 38px from top = 22px peek above body (body starts at 60px, 60-22=38) */
-  top:38px;
+  top:0;
   left:0;
-  right:0;
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  gap:2px;
-  padding:0 2px;
+  width:100%;
+  /* 5:7 ratio card fills exactly the pack body height (200×280) */
+  height:100%;
   z-index:2;
-  pointer-events:none;
   opacity:0;
-  transition:opacity .5s .38s;
+  transition:opacity .4s ease .3s;
+  pointer-events:none;
 }
-.pack-peek.show{opacity:1}
-
-/* Each peek card fills 1/5 of pack width (200px - 4×2px gap - 4px padding = 184px / 5 ≈ 36px) */
-.peek-c{
-  flex:1;
-  /* Height = show enough card: just the top portion protrudes above body edge */
-  height:52px;
-  border-radius:3px 3px 0 0;
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.18);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.04), 0 -4px 12px rgba(0,0,0,.6);
-  background:#070b18;
-}
-.peek-c img{
+.card-in-pack.show{opacity:1}
+.card-in-pack img{
   width:100%;
   height:100%;
   object-fit:cover;
@@ -695,23 +666,18 @@ function buildPackVisual(pt, cards=[]){
     :'https://raw.githubusercontent.com/zolodio/Avatar-TCG-Database/main/BSTR001.jpg';
 
   /*
-    Show up to 5 card backs peeking out the top of the pack body.
-    Cards are full-width across the pack (flex:1 in CSS = equal share of 200px).
-    No rotation — straight up, like a real pack with cards inside.
-    object-position:top so you see the top portion of each card back.
+    Single card back inside the pack body — same width as pack (200px).
+    pack-body has overflow:hidden so it clips it exactly like a real card
+    in a foil sleeve. Fades in after the top tears off.
   */
-  const peekCards = cards.slice(0, 5);
-  const peekHtml = peekCards.map(c => {
-    const bk = (c.type==='chamber' && c.backImageLink) ? c.backImageLink : CARDBACK;
-    return `<div class="peek-c"><img src="${escH(bk)}" alt=""></div>`;
-  }).join('');
+  const firstCard = cards[0];
+  const cardBackSrc = (firstCard && firstCard.type === 'chamber' && firstCard.backImageLink)
+    ? firstCard.backImageLink
+    : CARDBACK;
 
   return `
 <div class="pack-wrap floating" id="pack-wrap">
   <div class="pack-container" id="pack-container">
-    <!-- peek sits between pack-top (z:3) and pack-body (z:1) -->
-    <div class="pack-peek" id="pack-peek">${peekHtml}</div>
-
     <div class="pack-top" id="pack-top">
       <div class="swipe-arrows"><span>&#8592;</span><span>&#8594;</span></div>
       <img src="${escH(artSrc)}" style="position:absolute;top:0;left:0;width:100%;height:340px;object-fit:cover;" onerror="this.style.display='none'">
@@ -720,6 +686,10 @@ function buildPackVisual(pt, cards=[]){
     </div>
 
     <div class="pack-body" style="background:linear-gradient(160deg,${pt.c1} 0%,${pt.c2} 50%,${pt.c3} 100%)">
+      <!-- Card back sits inside body at z:2, revealed when top tears off -->
+      <div class="card-in-pack" id="card-in-pack">
+        <img src="${escH(cardBackSrc)}" alt="">
+      </div>
       <div class="p-art">
         <img src="${escH(artSrc)}" style="position:absolute;top:-60px;left:0;width:100%;height:340px;object-fit:cover;" onerror="this.style.display='none'">
       </div>
@@ -808,10 +778,10 @@ function doTear(){
   }
   const hint=$('hint-txt');
   if(hint)hint.style.display='none';
-  // Reveal peek cards as top flies away
+  // Reveal card back inside the body as top flies away
   setTimeout(()=>{
-    const peek=$('pack-peek');
-    if(peek)peek.classList.add('show');
+    const cip=document.getElementById('card-in-pack');
+    if(cip)cip.classList.add('show');
   },320);
   setTimeout(()=>{
     const stage=$('pack-stage');

@@ -46,7 +46,6 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 .ptc-name{font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;color:var(--txt)}
 .ptc-sub{font-size:.58rem;color:var(--txt3);margin-top:2px}
 
-/* Custom pack image row */
 #custom-img-row{margin-bottom:16px;padding:12px;background:var(--card);border:1px solid var(--bdr);border-radius:var(--r)}
 .custom-img-inner{display:flex;gap:8px;align-items:flex-start;margin-top:8px}
 #custom-img-inp{flex:1;background:var(--bg);border:1px solid var(--bdr);border-radius:var(--r);padding:9px 12px;color:var(--txt);font-family:'Nunito Sans',sans-serif;font-size:14px;outline:none}
@@ -61,7 +60,6 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 .slots-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:20px}
 @media(max-width:380px){.slots-grid{grid-template-columns:repeat(4,1fr)}}
 
-/* Regular setup slots — standard TCG portrait ratio */
 .slot{aspect-ratio:5/7;background:var(--card);border:2px dashed var(--bdr);border-radius:8px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;position:relative}
 .slot:hover{border-color:var(--acc);border-style:solid}
 .slot.has-card{border-style:solid;border-color:var(--bdr2)}
@@ -131,14 +129,73 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 /* PACK VISUAL */
 #pack-stage{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;position:absolute;inset:0}
 
-.pack-wrap{display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative}
+.pack-wrap{display:flex;flex-direction:column;align-items:center;position:relative}
 
-/* ── clip-path is NOT present here — the pack top looks like a normal rectangle until torn ── */
-.pack-top{width:200px;height:60px;position:relative;border-radius:12px 12px 0 0;overflow:hidden;transform-origin:top center;transition:transform .55s cubic-bezier(.4,0,.2,1),opacity .45s ease;box-shadow:0 -4px 20px rgba(0,0,0,.4)}
-/* ── .torn is added by JS at the moment of the tear, revealing the jagged edge ── */
+/* ── Pack container holds top + body with no overflow clip so peek can show ── */
+.pack-container{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ── Pack top: sits above body, high z-index to hide peek until torn ── */
+.pack-top{
+  width:200px;height:60px;
+  position:relative;
+  z-index:3;
+  border-radius:12px 12px 0 0;
+  overflow:hidden;
+  transform-origin:top center;
+  transition:transform .55s cubic-bezier(.4,0,.2,1),opacity .45s ease;
+  box-shadow:0 -4px 20px rgba(0,0,0,.4);
+  cursor:grab;
+  touch-action:pan-y;
+}
+.pack-top:active{cursor:grabbing}
 .pack-top.torn{clip-path:polygon(0% 0%,100% 0%,100% 58%,94% 74%,88% 56%,82% 79%,76% 55%,70% 81%,64% 57%,58% 76%,50% 59%,43% 82%,37% 58%,30% 75%,24% 56%,18% 80%,12% 57%,6% 77%,0% 60%)}
 .pack-top.fly{transform:translateY(-200px) translateX(50px) rotate(28deg) scale(0.55);opacity:0}
-.pack-body{width:200px;height:280px;border-radius:0 0 12px 12px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);}
+
+/* ── Pack body ── */
+.pack-body{
+  width:200px;height:280px;
+  position:relative;
+  z-index:1;
+  border-radius:0 0 12px 12px;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);
+}
+
+/* ── Peek: absolutely inside pack-container, z-index between body and top ──
+   Starts at top:22px so cards span from 22→78px.
+   Pack-top covers 0→60px (z-index 3 > peek z-index 2), hiding the top 38px.
+   After top flies away, full 56px of each card is visible peeking out.      ── */
+.pack-peek{
+  position:absolute;
+  top:22px;
+  left:0;right:0;
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+  gap:3px;
+  z-index:2;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .5s .38s;
+}
+.pack-peek.show{opacity:1}
+
+.peek-c{
+  width:36px;
+  height:56px;
+  border-radius:4px 4px 0 0;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 -6px 18px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.04);
+  background:#070b18;
+  flex-shrink:0;
+}
+.peek-c img{width:100%;height:100%;object-fit:cover;display:block}
+
 .p-art{position:absolute;inset:0}
 .p-foil{position:absolute;inset:0;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.1) 50%,transparent 80%);background-size:300% 100%;animation:foil 4.5s ease-in-out infinite;mix-blend-mode:overlay;pointer-events:none}
 @keyframes foil{0%{background-position:200% 0}50%{background-position:-100% 0}100%{background-position:200% 0}}
@@ -150,21 +207,6 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 .p-circle{position:absolute;border-radius:50%;opacity:.09}
 .p-center-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:4rem;opacity:.16;user-select:none;pointer-events:none}
 
-.pack-peek{
-  display:flex;
-  gap:5px;
-  justify-content:center;
-  align-items:flex-end;
-  opacity:0;
-  transform:translateY(-18px);
-  transition:opacity .45s .32s, transform .45s .32s;
-  pointer-events:none;
-  padding-top:5px;
-}
-.pack-peek.show{opacity:1;transform:translateY(0)}
-.peek-c{width:44px;height:60px;border-radius:5px;border:1px solid rgba(255,255,255,.16);overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.65);background:#090d1c;flex-shrink:0}
-.peek-c img{width:100%;height:100%;object-fit:cover;display:block}
-
 .pack-wrap.floating{animation:pfloat 3s ease-in-out infinite}
 @keyframes pfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .pack-wrap.shaking{animation:pshake .4s cubic-bezier(.36,.07,.19,.97)}
@@ -172,6 +214,20 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 
 .hint-txt{position:absolute;bottom:52px;left:50%;transform:translateX(-50%);font-size:.75rem;color:var(--txt3);letter-spacing:.13em;text-transform:uppercase;animation:hblink 2.2s ease-in-out infinite;white-space:nowrap;pointer-events:none}
 @keyframes hblink{0%,100%{opacity:.45}50%{opacity:1}}
+
+/* Swipe indicator arrows on pack-top */
+.swipe-arrows{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 10px;
+  pointer-events:none;
+  animation:arrowpulse 2s ease-in-out infinite;
+}
+@keyframes arrowpulse{0%,100%{opacity:.35}50%{opacity:.9}}
+.swipe-arrows span{font-size:1rem;color:rgba(255,255,255,.7)}
 
 .pull-btn{margin-top:30px;padding:14px 40px;background:linear-gradient(135deg,var(--zen),var(--acc));color:#fff;border:none;border-radius:99px;font-family:'Cinzel',serif;font-weight:700;font-size:.95rem;cursor:pointer;letter-spacing:.04em;box-shadow:0 6px 24px rgba(180,77,223,.35);transition:all .2s;animation:pbtnpulse 2s ease-in-out infinite}
 .pull-btn:hover{transform:scale(1.06);box-shadow:0 8px 32px rgba(180,77,223,.55)}
@@ -186,7 +242,6 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
   overflow:hidden;
 }
 
-/* Header bar in spread */
 .spread-hd{
   flex:0 0 44px;
   display:flex;
@@ -220,7 +275,6 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
   width:100%;
 }
 
-/* Footer for done actions */
 .spread-footer{
   flex:0 0 52px;
   display:flex;
@@ -326,7 +380,6 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 .sc.entry{animation:cardIn .45s cubic-bezier(.34,1.3,.64,1) both}
 @keyframes cardIn{from{transform:translateY(40px) scale(.72);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
 
-/* Rarity glows */
 .sc.revealed.rarity-common{filter:drop-shadow(0 0 5px rgba(138,142,168,.5))}
 .sc.revealed.rarity-uncommon{filter:drop-shadow(0 0 7px rgba(92,184,92,.65));animation:uncommongl 2s ease-in-out infinite alternate}
 .sc.revealed.rarity-rare{filter:drop-shadow(0 0 10px rgba(46,140,232,.75))}
@@ -380,7 +433,6 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
     <div class="sec-lbl">1 — Choose Booster Pack</div>
     <div class="pt-row" id="pt-row"></div>
 
-    <!-- Custom pack image URL (shown only when Custom Pack selected) -->
     <div id="custom-img-row" style="display:none">
       <div class="sec-lbl" style="margin-bottom:6px">Custom Booster Art (Image URL)</div>
       <div class="custom-img-inner">
@@ -399,7 +451,7 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
     </div>
     <div class="slots-grid" id="slots-grid"></div>
     <div class="btn-row">
-      <button id="btn-rand" class="btn btn-sec"><i class="fas fa-shuffle"></i> Randomize</button>
+      <button id="btn-rand" class="btn btn-sec"><i class="fas fa-shuffle"></i> Surprise Me!</button>
       <button id="btn-share-setup" class="btn btn-out" disabled><i class="fas fa-link"></i> Copy Link</button>
       <button id="btn-start" class="btn btn-pri" disabled><i class="fas fa-gift"></i> Open Pack!</button>
     </div>
@@ -590,23 +642,36 @@ function buildPkGrid(){
 }
 
 function randomize(){
-  const reg=allCards.filter(c=>{const n=parseInt(c.number,10);return n>=1&&n<=175});
-  const chs=allCards.filter(c=>{const n=parseInt(c.number,10);return n>=176&&n<=235});
-  const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
-  for(let i=0;i<9;i++)slots[i]=pick(reg);
-  slots[9]=chs.length?pick(chs):null;
-  buildSlots();
+  const byRarity=r=>allCards.filter(c=>{const n=parseInt(c.number,10);return n>=1&&n<=175&&c.rarity===r;});
+  const commons   =byRarity('common');
+  const uncommons =byRarity('uncommon');
+  const rares     =byRarity('rare');
+  const zenementals=byRarity('zenemental');
+  const chambers  =allCards.filter(c=>{const n=parseInt(c.number,10);return n>=176&&n<=235;});
+  const pick=arr=>arr.length?arr[Math.floor(Math.random()*arr.length)]:null;
+  // 5 commons → slots 0-4
+  for(let i=0;i<5;i++) slots[i]=pick(commons);
+  // 3 uncommons → slots 5-7
+  for(let i=5;i<8;i++) slots[i]=pick(uncommons);
+  // 1 rare (1/6 chance upgrades to zenemental) → slot 8
+  const useZen=Math.random()<1/6&&zenementals.length>0;
+  slots[8]=useZen?pick(zenementals):pick(rares);
+  // 1 chamber → slot 9
+  slots[9]=pick(chambers);
 }
 
-// PACK VISUAL
+// ── PACK VISUAL ─────────────────────────────────────────────────────────────
+// Peek shows card backs peeking vertically out the top of pack-body.
+// pack-top (z-index 3) covers the peek (z-index 2) until torn & flown away.
 function buildPackVisual(pt, cards=[]){
   const syms=SYMS[pt.id]||['✨','⭐','💫'];
   const artSrc=(pt.id==='CUSTOM'&&customPackImageUrl)
     ?customPackImageUrl
     :'https://raw.githubusercontent.com/zolodio/Avatar-TCG-Database/main/BSTR001.jpg';
 
-  const peekCards=cards.slice(0,6);
-  const angles=[-14,-8,-3,3,8,14];
+  // 5 cards, slight fan, transform-origin bottom so they fan naturally
+  const peekCards=cards.slice(0,5);
+  const angles=[-9,-4.5,0,4.5,9];
   const peekHtml=peekCards.map((c,i)=>{
     const bk=(c.type==='chamber'&&c.backImageLink)?c.backImageLink:CARDBACK;
     const ang=angles[i]||0;
@@ -617,8 +682,10 @@ function buildPackVisual(pt, cards=[]){
 
   return `
 <div class="pack-wrap floating" id="pack-wrap">
-  <div style="position:relative">
+  <div class="pack-container" id="pack-container">
+    <div class="pack-peek" id="pack-peek">${peekHtml}</div>
     <div class="pack-top" id="pack-top">
+      <div class="swipe-arrows"><span>&#8592;</span><span>&#8594;</span></div>
       <img src="${escH(artSrc)}" style="position:absolute;top:0;left:0;width:100%;height:340px;object-fit:cover;" onerror="this.style.display='none'">
       <div class="p-foil"></div>
       <div class="p-glow"></div>
@@ -637,55 +704,105 @@ function buildPackVisual(pt, cards=[]){
       <div class="p-center-icon">${pt.icon}</div>
     </div>
   </div>
-  <div class="pack-peek" id="pack-peek">${peekHtml}</div>
 </div>
-<div class="hint-txt" id="hint-txt">Tap pack to open</div>`;
+<div class="hint-txt" id="hint-txt">&#8592; Swipe pack top to tear &#8594;</div>`;
 }
 
-// EXPERIENCE FLOW
+// ── SWIPE-TO-TEAR ────────────────────────────────────────────────────────────
+// Attach drag/swipe listeners to pack-top only. Live-follows finger/mouse.
+// Swipe > 55px triggers the tear sequence.
+function addSwipeTear(){
+  const packTop=document.getElementById('pack-top');
+  if(!packTop)return;
+  let startX=null, active=false;
+
+  function onStart(x){
+    if(phase!=='sealed')return;
+    startX=x; active=true;
+    packTop.style.transition='none';
+    const wrap=document.getElementById('pack-wrap');
+    if(wrap)wrap.classList.remove('floating');
+  }
+  function onMove(x){
+    if(!active||startX===null)return;
+    const dx=x-startX;
+    packTop.style.transform=`translateX(${dx*.75}px) rotate(${dx*.07}deg)`;
+  }
+  function onEnd(x){
+    if(!active||startX===null)return;
+    active=false;
+    const dx=x-startX;
+    if(Math.abs(dx)>55){
+      // Trigger tear
+      packTop.style.transition='';
+      packTop.style.transform='';
+      phase='shaking';
+      const wrap=document.getElementById('pack-wrap');
+      if(wrap){wrap.classList.remove('floating');wrap.classList.add('shaking');}
+      setTimeout(doTear,400);
+    } else {
+      // Snap back
+      packTop.style.transition='transform .35s cubic-bezier(.4,0,.2,1)';
+      packTop.style.transform='';
+      const wrap=document.getElementById('pack-wrap');
+      if(wrap)wrap.classList.add('floating');
+    }
+    startX=null;
+  }
+
+  // Touch
+  packTop.addEventListener('touchstart',e=>{onStart(e.touches[0].clientX);},{passive:true});
+  packTop.addEventListener('touchmove',e=>{onMove(e.touches[0].clientX);},{passive:true});
+  packTop.addEventListener('touchend',e=>{onEnd(e.changedTouches[0].clientX);});
+
+  // Mouse
+  const onMouseMove=e=>{if(active)onMove(e.clientX);};
+  const onMouseUp=e=>{if(active)onEnd(e.clientX);};
+  packTop.addEventListener('mousedown',e=>{e.preventDefault();onStart(e.clientX);});
+  document.addEventListener('mousemove',onMouseMove);
+  document.addEventListener('mouseup',onMouseUp);
+}
+
+// ── EXPERIENCE FLOW ───────────────────────────────────────────────────────────
 function startExp(data){
-  packData=data;flipped.clear();phase='sealed';
+  packData=data; flipped.clear(); phase='sealed';
   const pt=PACKS.find(p=>p.id===data.packTypeId)||PACKS[0];
   if(data.customImg)customPackImageUrl=data.customImg;
   const stage=$('pack-stage');
   const spread=$('spread-stage');
-  stage.style.display='';spread.style.display='none';
+  stage.style.display=''; spread.style.display='none';
   stage.innerHTML=buildPackVisual(pt, data.cards);
-  stage.removeEventListener('click',onSealedClick);
-  stage.addEventListener('click',onSealedClick);
+  // Attach swipe handler after DOM settles
+  setTimeout(addSwipeTear, 60);
   showScreen('s-exp');
-}
-
-function onSealedClick(){
-  if(phase!=='sealed')return;
-  phase='shaking';
-  const wrap=$('pack-wrap');
-  wrap.classList.remove('floating');
-  wrap.classList.add('shaking');
-  setTimeout(doTear,420);
 }
 
 function doTear(){
   phase='opening';
-  // Apply the jagged tear shape only now — on first click
-  $('pack-top').classList.add('torn');
-  $('pack-top').classList.add('fly');
+  const pt=$('pack-top');
+  if(pt){
+    pt.classList.add('torn');
+    // Brief pause so jagged edge is visible before flying
+    requestAnimationFrame(()=>requestAnimationFrame(()=>pt.classList.add('fly')));
+  }
   const hint=$('hint-txt');
   if(hint)hint.style.display='none';
+  // Reveal peek cards after top starts flying
   setTimeout(()=>{
     const peek=$('pack-peek');
     if(peek)peek.classList.add('show');
-  },300);
+  },320);
+  // Add Pull Cards button
   setTimeout(()=>{
     const stage=$('pack-stage');
+    if(!stage)return;
     const btn=document.createElement('button');
-    btn.className='pull-btn';btn.id='pull-btn';
+    btn.className='pull-btn'; btn.id='pull-btn';
     btn.innerHTML='<i class="fas fa-hand-sparkles"></i> Pull Cards!';
     stage.appendChild(btn);
-    stage.removeEventListener('click',onSealedClick);
     btn.addEventListener('click',pullCards,{once:true});
     phase='pulling';
-  },700);
+  },720);
 }
 
 function pullCards(){
@@ -697,8 +814,13 @@ function pullCards(){
   buildSpread();
 }
 
+function rarityOrder(c){
+  if(c.type==='chamber')return 5;
+  return{common:0,uncommon:1,rare:2,zenemental:3,promo:4}[c.rarity]??2;
+}
+
 function buildSpread(){
-  const cards=packData.cards;
+  const cards=[...packData.cards].sort((a,b)=>rarityOrder(a)-rarityOrder(b));
   const spread=$('spread-stage');
   spread.innerHTML=`
     <div class="spread-hd">
@@ -741,7 +863,7 @@ function buildSpread(){
     row.appendChild(el);
   });
 
-  $('open-again').addEventListener('click',()=>{flipped.clear();showScreen('s-setup');phase='sealed'});
+  $('open-again').addEventListener('click',()=>{flipped.clear();showScreen('s-setup');phase='sealed';buildSlots();});
   $('share-result').addEventListener('click',shareExp);
 }
 
@@ -868,7 +990,19 @@ async function init(){
   $('picker-modal').addEventListener('click',e=>{if(e.target===$('picker-modal'))closePicker()});
   $('pk-search').addEventListener('input',function(){pickerQ=this.value;buildPkGrid()});
 
-  $('btn-rand').addEventListener('click',randomize);
+  // ── Randomize: immediately launches pack experience without showing cards ──
+  $('btn-rand').addEventListener('click',()=>{
+    if(allCards.length===0){toast('Card database not loaded yet');return;}
+    randomize();
+    const cards=slots.filter(Boolean);
+    if(cards.length<10){toast('Not enough cards in database');return;}
+    const data={packTypeId:packType,cards,customImg:customPackImageUrl};
+    const code=encPack(packType,cards);
+    if(code)history.replaceState(null,'','#'+code);
+    startExp(data);
+    setupExpBtns();
+  });
+
   $('btn-start').addEventListener('click',()=>{
     const cards=slots.filter(Boolean);
     if(cards.length<10){toast('Please fill all 10 card slots!');return;}

@@ -131,16 +131,21 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 
 .pack-wrap{display:flex;flex-direction:column;align-items:center;position:relative}
 
-/* ── Pack container holds top + body with no overflow clip so peek can show ── */
+/*
+  pack-container: stacking context for top / peek / body layers
+  NO overflow:hidden here so peek can protrude upward outside pack-body
+*/
 .pack-container{
   position:relative;
   display:flex;
   flex-direction:column;
+  width:200px;
 }
 
-/* ── Pack top: sits above body, high z-index to hide peek until torn ── */
+/* ── Pack top ── */
 .pack-top{
-  width:200px;height:60px;
+  width:200px;
+  height:60px;
   position:relative;
   z-index:3;
   border-radius:12px 12px 0 0;
@@ -150,33 +155,52 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
   box-shadow:0 -4px 20px rgba(0,0,0,.4);
   cursor:grab;
   touch-action:pan-y;
+  flex-shrink:0;
 }
 .pack-top:active{cursor:grabbing}
-.pack-top.torn{clip-path:polygon(0% 0%,100% 0%,100% 58%,94% 74%,88% 56%,82% 79%,76% 55%,70% 81%,64% 57%,58% 76%,50% 59%,43% 82%,37% 58%,30% 75%,24% 56%,18% 80%,12% 57%,6% 77%,0% 60%)}
+.pack-top.torn{
+  clip-path:polygon(0% 0%,100% 0%,100% 58%,94% 74%,88% 56%,82% 79%,76% 55%,70% 81%,64% 57%,58% 76%,50% 59%,43% 82%,37% 58%,30% 75%,24% 56%,18% 80%,12% 57%,6% 77%,0% 60%)
+}
 .pack-top.fly{transform:translateY(-200px) translateX(50px) rotate(28deg) scale(0.55);opacity:0}
 
 /* ── Pack body ── */
 .pack-body{
-  width:200px;height:280px;
+  width:200px;
+  height:280px;
   position:relative;
   z-index:1;
   border-radius:0 0 12px 12px;
   overflow:hidden;
   box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);
+  flex-shrink:0;
 }
 
-/* ── Peek: absolutely inside pack-container, z-index between body and top ──
-   Starts at top:22px so cards span from 22→78px.
-   Pack-top covers 0→60px (z-index 3 > peek z-index 2), hiding the top 38px.
-   After top flies away, full 56px of each card is visible peeking out.      ── */
+/*
+  ── Peek: absolute inside pack-container, z-index 2 (above body, below top)
+  
+  Cards are the same width as the pack (200px total, 5 cards with tiny gaps).
+  They sit so their tops protrude ~22px above pack-body's top edge (y=60).
+  pack-top (z-index:3, height:60px) hides the protrusion until it flies away.
+  After top flies: ~22px of each card top is visible above the body opening.
+
+  bottom: 0 means card bottoms align with pack-container bottom, which means
+  cards extend upward into the body — exactly like cards sitting in a sleeve.
+  We control how much peeks out by adjusting the container's top offset.
+  
+  Simpler: position peek so card tops start at ~38px from container top.
+  Cards are 200px wide (full pack width), tall enough to look like real cards.
+*/
 .pack-peek{
   position:absolute;
-  top:22px;
-  left:0;right:0;
+  /* 38px from top = 22px peek above body (body starts at 60px, 60-22=38) */
+  top:38px;
+  left:0;
+  right:0;
   display:flex;
   justify-content:center;
-  align-items:flex-end;
-  gap:3px;
+  align-items:flex-start;
+  gap:2px;
+  padding:0 2px;
   z-index:2;
   pointer-events:none;
   opacity:0;
@@ -184,17 +208,24 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 }
 .pack-peek.show{opacity:1}
 
+/* Each peek card fills 1/5 of pack width (200px - 4×2px gap - 4px padding = 184px / 5 ≈ 36px) */
 .peek-c{
-  width:36px;
-  height:56px;
-  border-radius:4px 4px 0 0;
+  flex:1;
+  /* Height = show enough card: just the top portion protrudes above body edge */
+  height:52px;
+  border-radius:3px 3px 0 0;
   overflow:hidden;
-  border:1px solid rgba(255,255,255,.22);
-  box-shadow:0 -6px 18px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.04), 0 -4px 12px rgba(0,0,0,.6);
   background:#070b18;
-  flex-shrink:0;
 }
-.peek-c img{width:100%;height:100%;object-fit:cover;display:block}
+.peek-c img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:top center;
+  display:block;
+}
 
 .p-art{position:absolute;inset:0}
 .p-foil{position:absolute;inset:0;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.1) 50%,transparent 80%);background-size:300% 100%;animation:foil 4.5s ease-in-out infinite;mix-blend-mode:overlay;pointer-events:none}
@@ -649,47 +680,45 @@ function randomize(){
   const zenementals=byRarity('zenemental');
   const chambers  =allCards.filter(c=>{const n=parseInt(c.number,10);return n>=176&&n<=235;});
   const pick=arr=>arr.length?arr[Math.floor(Math.random()*arr.length)]:null;
-  // 5 commons → slots 0-4
   for(let i=0;i<5;i++) slots[i]=pick(commons);
-  // 3 uncommons → slots 5-7
   for(let i=5;i<8;i++) slots[i]=pick(uncommons);
-  // 1 rare (1/6 chance upgrades to zenemental) → slot 8
   const useZen=Math.random()<1/6&&zenementals.length>0;
   slots[8]=useZen?pick(zenementals):pick(rares);
-  // 1 chamber → slot 9
   slots[9]=pick(chambers);
 }
 
 // ── PACK VISUAL ─────────────────────────────────────────────────────────────
-// Peek shows card backs peeking vertically out the top of pack-body.
-// pack-top (z-index 3) covers the peek (z-index 2) until torn & flown away.
 function buildPackVisual(pt, cards=[]){
   const syms=SYMS[pt.id]||['✨','⭐','💫'];
   const artSrc=(pt.id==='CUSTOM'&&customPackImageUrl)
     ?customPackImageUrl
     :'https://raw.githubusercontent.com/zolodio/Avatar-TCG-Database/main/BSTR001.jpg';
 
-  // 5 cards, slight fan, transform-origin bottom so they fan naturally
-  const peekCards=cards.slice(0,5);
-  const angles=[-9,-4.5,0,4.5,9];
-  const peekHtml=peekCards.map((c,i)=>{
-    const bk=(c.type==='chamber'&&c.backImageLink)?c.backImageLink:CARDBACK;
-    const ang=angles[i]||0;
-    return `<div class="peek-c" style="transform:rotate(${ang}deg);transform-origin:bottom center;">
-      <img src="${escH(bk)}" alt="">
-    </div>`;
+  /*
+    Show up to 5 card backs peeking out the top of the pack body.
+    Cards are full-width across the pack (flex:1 in CSS = equal share of 200px).
+    No rotation — straight up, like a real pack with cards inside.
+    object-position:top so you see the top portion of each card back.
+  */
+  const peekCards = cards.slice(0, 5);
+  const peekHtml = peekCards.map(c => {
+    const bk = (c.type==='chamber' && c.backImageLink) ? c.backImageLink : CARDBACK;
+    return `<div class="peek-c"><img src="${escH(bk)}" alt=""></div>`;
   }).join('');
 
   return `
 <div class="pack-wrap floating" id="pack-wrap">
   <div class="pack-container" id="pack-container">
+    <!-- peek sits between pack-top (z:3) and pack-body (z:1) -->
     <div class="pack-peek" id="pack-peek">${peekHtml}</div>
+
     <div class="pack-top" id="pack-top">
       <div class="swipe-arrows"><span>&#8592;</span><span>&#8594;</span></div>
       <img src="${escH(artSrc)}" style="position:absolute;top:0;left:0;width:100%;height:340px;object-fit:cover;" onerror="this.style.display='none'">
       <div class="p-foil"></div>
       <div class="p-glow"></div>
     </div>
+
     <div class="pack-body" style="background:linear-gradient(160deg,${pt.c1} 0%,${pt.c2} 50%,${pt.c3} 100%)">
       <div class="p-art">
         <img src="${escH(artSrc)}" style="position:absolute;top:-60px;left:0;width:100%;height:340px;object-fit:cover;" onerror="this.style.display='none'">
@@ -709,8 +738,6 @@ function buildPackVisual(pt, cards=[]){
 }
 
 // ── SWIPE-TO-TEAR ────────────────────────────────────────────────────────────
-// Attach drag/swipe listeners to pack-top only. Live-follows finger/mouse.
-// Swipe > 55px triggers the tear sequence.
 function addSwipeTear(){
   const packTop=document.getElementById('pack-top');
   if(!packTop)return;
@@ -733,7 +760,6 @@ function addSwipeTear(){
     active=false;
     const dx=x-startX;
     if(Math.abs(dx)>55){
-      // Trigger tear
       packTop.style.transition='';
       packTop.style.transform='';
       phase='shaking';
@@ -741,7 +767,6 @@ function addSwipeTear(){
       if(wrap){wrap.classList.remove('floating');wrap.classList.add('shaking');}
       setTimeout(doTear,400);
     } else {
-      // Snap back
       packTop.style.transition='transform .35s cubic-bezier(.4,0,.2,1)';
       packTop.style.transform='';
       const wrap=document.getElementById('pack-wrap');
@@ -750,12 +775,10 @@ function addSwipeTear(){
     startX=null;
   }
 
-  // Touch
   packTop.addEventListener('touchstart',e=>{onStart(e.touches[0].clientX);},{passive:true});
   packTop.addEventListener('touchmove',e=>{onMove(e.touches[0].clientX);},{passive:true});
   packTop.addEventListener('touchend',e=>{onEnd(e.changedTouches[0].clientX);});
 
-  // Mouse
   const onMouseMove=e=>{if(active)onMove(e.clientX);};
   const onMouseUp=e=>{if(active)onEnd(e.clientX);};
   packTop.addEventListener('mousedown',e=>{e.preventDefault();onStart(e.clientX);});
@@ -772,7 +795,6 @@ function startExp(data){
   const spread=$('spread-stage');
   stage.style.display=''; spread.style.display='none';
   stage.innerHTML=buildPackVisual(pt, data.cards);
-  // Attach swipe handler after DOM settles
   setTimeout(addSwipeTear, 60);
   showScreen('s-exp');
 }
@@ -782,17 +804,15 @@ function doTear(){
   const pt=$('pack-top');
   if(pt){
     pt.classList.add('torn');
-    // Brief pause so jagged edge is visible before flying
     requestAnimationFrame(()=>requestAnimationFrame(()=>pt.classList.add('fly')));
   }
   const hint=$('hint-txt');
   if(hint)hint.style.display='none';
-  // Reveal peek cards after top starts flying
+  // Reveal peek cards as top flies away
   setTimeout(()=>{
     const peek=$('pack-peek');
     if(peek)peek.classList.add('show');
   },320);
-  // Add Pull Cards button
   setTimeout(()=>{
     const stage=$('pack-stage');
     if(!stage)return;
@@ -990,7 +1010,6 @@ async function init(){
   $('picker-modal').addEventListener('click',e=>{if(e.target===$('picker-modal'))closePicker()});
   $('pk-search').addEventListener('input',function(){pickerQ=this.value;buildPkGrid()});
 
-  // ── Randomize: immediately launches pack experience without showing cards ──
   $('btn-rand').addEventListener('click',()=>{
     if(allCards.length===0){toast('Card database not loaded yet');return;}
     randomize();

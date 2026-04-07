@@ -34,8 +34,6 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 #s-setup{padding:20px 16px 100px;width:100%;background:transparent}
 #s-setup-inner{max-width:680px;width:100%;margin:0 auto}
 .setup-hd{text-align:center;padding:24px 0 22px}
-.setup-hd h1{font-family:'Cinzel',serif;font-weight:900;font-size:1.7rem;background:linear-gradient(135deg,var(--air) 0%,var(--fire) 40%,var(--water) 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.setup-hd h2{font-family:'Cinzel',serif;font-size:.78rem;color:var(--txt3);font-weight:400;letter-spacing:.25em;text-transform:uppercase;margin-top:4px}
 .sec-lbl{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--txt3);margin-bottom:10px}
 .pt-row{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
 .pt-row::-webkit-scrollbar{display:none}
@@ -81,6 +79,8 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 .btn-sec:hover{border-color:var(--bdr2);color:var(--txt)}
 .btn-out{background:transparent;color:var(--txt2);border-color:var(--bdr)}
 .btn-out:not(:disabled):hover{border-color:var(--acc);color:var(--acc)}
+.btn-digital{background:linear-gradient(135deg,#1a0f2e,#0f1a2e);color:var(--zen);border-color:var(--zen);flex:1}
+.btn-digital:hover{background:linear-gradient(135deg,#2a1545,#0f1a3e);box-shadow:0 0 18px rgba(180,77,223,.3)}
 .code-row{display:flex;gap:8px}
 .code-inp{flex:1;background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 14px;color:var(--txt);font-family:'Nunito Sans',sans-serif;font-size:16px;outline:none}
 .code-inp::placeholder{color:var(--txt3)}
@@ -128,290 +128,99 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 
 /* PACK VISUAL */
 #pack-stage{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;position:absolute;inset:0}
-
 .pack-wrap{display:flex;flex-direction:column;align-items:center;position:relative}
-
-.pack-container{
-  position:relative;
-  display:flex;
-  flex-direction:column;
-  width:200px;
-}
-
-/* ── Pack top ── */
-.pack-top{
-  width:200px;
-  height:60px;
-  position:relative;
-  z-index:5;  /* above frame(3), cards(2), body(1) */
-  border-radius:12px 12px 0 0;
-  overflow:hidden;
-  transform-origin:top center;
-  transition:transform .55s cubic-bezier(.4,0,.2,1),opacity .45s ease;
-  box-shadow:0 -4px 20px rgba(0,0,0,.4);
-  cursor:grab;
-  touch-action:pan-y;
-  flex-shrink:0;
-}
+.pack-container{position:relative;display:flex;flex-direction:column;width:200px;}
+.pack-top{width:200px;height:60px;position:relative;z-index:5;border-radius:12px 12px 0 0;overflow:hidden;transform-origin:top center;transition:transform .55s cubic-bezier(.4,0,.2,1),opacity .45s ease;box-shadow:0 -4px 20px rgba(0,0,0,.4);cursor:grab;touch-action:pan-y;flex-shrink:0;}
 .pack-top:active{cursor:grabbing}
-.pack-top.torn{
-  clip-path:polygon(0% 0%,100% 0%,100% 58%,94% 74%,88% 56%,82% 79%,76% 55%,70% 81%,64% 57%,58% 76%,50% 59%,43% 82%,37% 58%,30% 75%,24% 56%,18% 80%,12% 57%,6% 77%,0% 60%)
-}
+.pack-top.torn{clip-path:polygon(0% 0%,100% 0%,100% 58%,94% 74%,88% 56%,82% 79%,76% 55%,70% 81%,64% 57%,58% 76%,50% 59%,43% 82%,37% 58%,30% 75%,24% 56%,18% 80%,12% 57%,6% 77%,0% 60%)}
 .pack-top.fly{transform:translateY(-200px) translateX(50px) rotate(28deg) scale(0.55);opacity:0}
-
-/* ── Pack body ── */
-.pack-body{
-  width:200px;
-  height:280px;
-  position:relative;
-  z-index:4;
-  border-radius:0 0 12px 12px;
-  overflow:hidden;
-  box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);
-  flex-shrink:0;
-}
-
-/*
-  ── Card stack: absolutely inside pack-container, starts at top:38px.
-  That means 22px of cards sit behind pack-top (z:5).
-  When pack-top gets the torn clip-path, its jagged bottom edge (~48px) exposes
-  a sliver of card top — visible BEFORE the top flies away.
-  After top flies, the full 22px peek is visible above pack-body opening.
-*/
-.cards-stack{
-  position:absolute;
-  top:38px;
-  left:0;
-  width:200px;
-  z-index:2;
-  pointer-events:none;
-}
-.stack-card{
-  position:absolute;
-  top:0; left:0;
-  width:200px;
-  height:280px;
-  overflow:hidden;
-  border-radius:3px 3px 0 0;
-  transition:transform .65s cubic-bezier(.4,0,.2,1);
-  box-shadow:0 -2px 10px rgba(0,0,0,.55);
-}
-.stack-card:nth-child(1){z-index:10}
-.stack-card:nth-child(2){z-index:9}
-.stack-card:nth-child(3){z-index:8}
-.stack-card:nth-child(4){z-index:7}
-.stack-card:nth-child(5){z-index:6}
+.pack-body{width:200px;height:280px;position:relative;z-index:4;border-radius:0 0 12px 12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);flex-shrink:0;}
+.cards-stack{position:absolute;top:38px;left:0;width:200px;z-index:2;pointer-events:none;}
+.stack-card{position:absolute;top:0;left:0;width:200px;height:280px;overflow:hidden;border-radius:3px 3px 0 0;transition:transform .65s cubic-bezier(.4,0,.2,1);box-shadow:0 -2px 10px rgba(0,0,0,.55);}
+.stack-card:nth-child(1){z-index:10}.stack-card:nth-child(2){z-index:9}.stack-card:nth-child(3){z-index:8}.stack-card:nth-child(4){z-index:7}.stack-card:nth-child(5){z-index:6}
 .stack-card img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
-/* Fan: each card below the top shifts down into the pack, suggesting depth */
 .cards-stack.fanned .stack-card:nth-child(2){transform:translateY(-5px)}
 .cards-stack.fanned .stack-card:nth-child(3){transform:translateY(-10px)}
 .cards-stack.fanned .stack-card:nth-child(4){transform:translateY(-15px)}
 .cards-stack.fanned .stack-card:nth-child(5){transform:translateY(-20px)}
-
-/*
-  ── Pack-body frame: foil-wrapper edge overlay above the card stack.
-  Transparent interior so card backs show through; border/shadow give
-  the illusion the foil is still wrapped around the card edges.
-*/
-.pack-body-frame{
-  position:absolute;
-  top:60px;
-  left:0;
-  width:200px;
-  height:280px;
-  z-index:3;
-  border-radius:0 0 12px 12px;
-  border:1px solid rgba(255,255,255,.1);
-  border-top:none;
-  box-shadow:inset 2px 0 6px rgba(0,0,0,.25),inset -2px 0 6px rgba(0,0,0,.25),inset 0 -4px 12px rgba(0,0,0,.3);
-  pointer-events:none;
-  background:transparent;
-}
-
+.pack-body-frame{position:absolute;top:60px;left:0;width:200px;height:280px;z-index:3;border-radius:0 0 12px 12px;border:1px solid rgba(255,255,255,.1);border-top:none;box-shadow:inset 2px 0 6px rgba(0,0,0,.25),inset -2px 0 6px rgba(0,0,0,.25),inset 0 -4px 12px rgba(0,0,0,.3);pointer-events:none;background:transparent;}
 .p-art{position:absolute;inset:0}
 .p-foil{position:absolute;inset:0;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.1) 50%,transparent 80%);background-size:300% 100%;animation:foil 4.5s ease-in-out infinite;mix-blend-mode:overlay;pointer-events:none}
 @keyframes foil{0%{background-position:200% 0}50%{background-position:-100% 0}100%{background-position:200% 0}}
 .p-glow{position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.06) 0%,transparent 50%,rgba(0,0,0,.2) 100%);pointer-events:none}
 .p-sym{position:absolute;font-size:3.8rem;opacity:.14;user-select:none;pointer-events:none}
-.p-sym.s1{top:30px;left:10px;transform:rotate(-18deg)}
-.p-sym.s2{top:50px;right:8px;transform:rotate(22deg)}
-.p-sym.s3{bottom:38px;left:18px;transform:rotate(12deg)}
+.p-sym.s1{top:30px;left:10px;transform:rotate(-18deg)}.p-sym.s2{top:50px;right:8px;transform:rotate(22deg)}.p-sym.s3{bottom:38px;left:18px;transform:rotate(12deg)}
 .p-circle{position:absolute;border-radius:50%;opacity:.09}
 .p-center-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:4rem;opacity:.16;user-select:none;pointer-events:none}
-
 .pack-wrap.floating{animation:pfloat 3s ease-in-out infinite}
 @keyframes pfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .pack-wrap.shaking{animation:pshake .4s cubic-bezier(.36,.07,.19,.97)}
 @keyframes pshake{10%,90%{transform:translate(-2px,0) rotate(-1deg)}20%,80%{transform:translate(3px,0) rotate(1deg)}30%,50%,70%{transform:translate(-4px,0) rotate(-1.5deg)}40%,60%{transform:translate(4px,0) rotate(1.5deg)}}
-
 .hint-txt{position:absolute;bottom:52px;left:50%;transform:translateX(-50%);font-size:.75rem;color:var(--txt3);letter-spacing:.13em;text-transform:uppercase;animation:hblink 2.2s ease-in-out infinite;white-space:nowrap;pointer-events:none}
 @keyframes hblink{0%,100%{opacity:.45}50%{opacity:1}}
-
-/* Swipe indicator arrows on pack-top */
-.swipe-arrows{
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 10px;
-  pointer-events:none;
-  animation:arrowpulse 2s ease-in-out infinite;
-}
+.swipe-arrows{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 10px;pointer-events:none;animation:arrowpulse 2s ease-in-out infinite;}
 @keyframes arrowpulse{0%,100%{opacity:.35}50%{opacity:.9}}
 .swipe-arrows span{font-size:1rem;color:rgba(255,255,255,.7)}
-
 .pull-btn{margin-top:30px;padding:14px 40px;background:linear-gradient(135deg,var(--zen),var(--acc));color:#fff;border:none;border-radius:99px;font-family:'Cinzel',serif;font-weight:700;font-size:.95rem;cursor:pointer;letter-spacing:.04em;box-shadow:0 6px 24px rgba(180,77,223,.35);transition:all .2s;animation:pbtnpulse 2s ease-in-out infinite}
 .pull-btn:hover{transform:scale(1.06);box-shadow:0 8px 32px rgba(180,77,223,.55)}
 @keyframes pbtnpulse{0%,100%{box-shadow:0 6px 24px rgba(180,77,223,.35)}50%{box-shadow:0 6px 32px rgba(180,77,223,.6)}}
 
-/* ─── SPREAD STAGE ─── */
-#spread-stage{
-  position:fixed;
-  inset:0;
-  display:none;
-  flex-direction:column;
-  overflow:hidden;
-}
-
-.spread-hd{
-  flex:0 0 44px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:0 14px;
-  margin-top:4px;
-}
-.spread-prog{
-  font-size:.7rem;
-  color:var(--txt3);
-  letter-spacing:.1em;
-  text-transform:uppercase;
-  text-align:center;
-  white-space:nowrap;
-}
+/* SPREAD STAGE */
+#spread-stage{position:fixed;inset:0;display:none;flex-direction:column;overflow:hidden;}
+.spread-hd{flex:0 0 44px;display:flex;align-items:center;justify-content:center;padding:0 14px;margin-top:4px;}
+.spread-prog{font-size:.7rem;color:var(--txt3);letter-spacing:.1em;text-transform:uppercase;text-align:center;white-space:nowrap;}
 .spread-prog span{color:var(--zen);font-weight:700}
-
-.cards-grid{
-  flex:1;
-  min-height:0;
-  display:grid;
-  --cw: min(calc((100vw - 36px) / 5), calc((100vh - 114px) / 3.854));
-  grid-template-columns:repeat(5, var(--cw));
-  grid-auto-rows:auto;
-  align-content:center;
-  justify-content:center;
-  align-items:start;
-  gap:6px;
-  padding:2px 6px 6px;
-  width:100%;
-}
-
-.spread-footer{
-  flex:0 0 52px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:0 12px 6px;
-}
-.done-acts{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:center;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .4s;
-}
+.cards-grid{flex:1;min-height:0;display:grid;--cw:min(calc((100vw - 36px) / 5), calc((100vh - 114px) / 3.854));grid-template-columns:repeat(5, var(--cw));grid-auto-rows:auto;align-content:center;justify-content:center;align-items:start;gap:6px;padding:2px 6px 6px;width:100%;}
+.spread-footer{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 12px 10px;gap:8px;}
+.done-acts{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;}
 .done-acts.show{opacity:1;pointer-events:all}
 
-/* ─── CARD BASE ─── */
-.sc{
+/* DIGITAL CLAIM PANEL */
+.digital-claim-panel{
+  background:linear-gradient(135deg,rgba(26,15,46,.95),rgba(15,26,46,.95));
+  border:1px solid var(--zen);
+  border-radius:var(--r2);
+  padding:16px 20px;
   width:100%;
-  aspect-ratio:5/7;
-  position:relative;
-  cursor:pointer;
-  transition:transform .2s;
-  perspective:900px;
+  max-width:520px;
+  display:none;
+  flex-direction:column;
+  gap:10px;
+  opacity:0;
+  transition:opacity .5s;
 }
+.digital-claim-panel.show{display:flex;opacity:1}
+.digital-claim-hd{display:flex;align-items:center;gap:8px;font-family:'Cinzel',serif;font-weight:700;font-size:.82rem;color:var(--zen)}
+.digital-claim-hd i{font-size:.9rem}
+.digital-claim-sub{font-size:.7rem;color:var(--txt3);line-height:1.5}
+.code-display{display:flex;gap:8px;align-items:center}
+.code-box{flex:1;background:rgba(0,0,0,.5);border:1px solid var(--bdr2);border-radius:8px;padding:10px 14px;font-family:'Courier New',monospace;font-size:.68rem;color:var(--air);letter-spacing:.04em;word-break:break-all;line-height:1.4}
+.btn-copy-code{flex:0 0 auto;background:rgba(180,77,223,.15);border:1px solid var(--zen);color:var(--zen);border-radius:8px;padding:10px 14px;font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:.75rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-copy-code:hover{background:rgba(180,77,223,.3)}
+.digital-claim-note{font-size:.62rem;color:var(--txt3);opacity:.7}
 
-.sc-inner{
-  width:100%;
-  height:100%;
-  position:absolute;
-  inset:0;
-  transform-style:preserve-3d;
-  transition:transform .62s cubic-bezier(.4,0,.2,1);
-}
+/* CARD BASE */
+.sc{width:100%;aspect-ratio:5/7;position:relative;cursor:pointer;transition:transform .2s;perspective:900px;}
+.sc-inner{width:100%;height:100%;position:absolute;inset:0;transform-style:preserve-3d;transition:transform .62s cubic-bezier(.4,0,.2,1);}
 .sc.flipped .sc-inner{transform:rotateY(180deg)}
 .sc:not(.flipped):hover{transform:translateY(-5px) scale(1.04);z-index:10}
-.sc-back,.sc-face{
-  position:absolute;
-  inset:0;
-  border-radius:8px;
-  backface-visibility:hidden;
-  -webkit-backface-visibility:hidden;
-  overflow:hidden;
-}
-.sc-back{
-  background:linear-gradient(145deg,#12082a 0%,#0d1848 50%,#12082a 100%);
-  border:1px solid rgba(255,255,255,.1);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
+.sc-back,.sc-face{position:absolute;inset:0;border-radius:8px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;}
+.sc-back{background:linear-gradient(145deg,#12082a 0%,#0d1848 50%,#12082a 100%);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;}
 .sc-back::after{content:'';width:55%;height:55%;border:1.5px solid rgba(255,255,255,.09);border-radius:50%;background:radial-gradient(circle,rgba(74,125,255,.07) 0%,transparent 70%)}
 .sc-back::before{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.06) 50%,transparent 70%);background-size:300% 100%;animation:foil 3.5s ease-in-out infinite}
 .sc-face{transform:rotateY(180deg)}
 .sc-face img{width:100%;height:100%;object-fit:cover;display:block;}
 .sc-face-ph{width:100%;height:100%;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--txt3);font-size:.7rem}
-
-/* ─── CHAMBER CARD ─── */
-.sc.chamber-card{
-  aspect-ratio:11/27;
-}
-
-.sc.chamber-card .sc-back::after{display:none}
-.sc.chamber-card .sc-back::before{display:none}
-.sc.chamber-card .sc-back{
-  border:2px solid rgba(240,201,70,.45);
-  box-shadow:0 0 22px rgba(240,201,70,.18) inset;
-}
-.sc.chamber-card .sc-back img{
-  width:100%;height:100%;object-fit:cover;display:block;
-}
-.sc.chamber-card .sc-face{
-  border:2px solid rgba(240,201,70,.45);
-  box-shadow:0 0 22px rgba(240,201,70,.18) inset;
-  background:#040810;
-}
-.sc.chamber-card .sc-face img{
-  object-fit:contain;
-  background:#040810;
-  width:100%;
-  height:100%;
-}
-.sc.chamber-card.flipped .sc-face::after{
-  content:'Tap to flip back';
-  position:absolute;
-  bottom:0;left:0;right:0;
-  padding:4px;
-  background:rgba(0,0,0,.55);
-  font-size:.48rem;
-  font-family:'Nunito Sans',sans-serif;
-  font-weight:700;
-  text-align:center;
-  color:rgba(240,201,70,.8);
-  letter-spacing:.06em;
-  text-transform:uppercase;
-  opacity:0;
-  transition:opacity .25s;
-}
+.sc.chamber-card{aspect-ratio:11/27;}
+.sc.chamber-card .sc-back::after{display:none}.sc.chamber-card .sc-back::before{display:none}
+.sc.chamber-card .sc-back{border:2px solid rgba(240,201,70,.45);box-shadow:0 0 22px rgba(240,201,70,.18) inset;}
+.sc.chamber-card .sc-back img{width:100%;height:100%;object-fit:cover;display:block;}
+.sc.chamber-card .sc-face{border:2px solid rgba(240,201,70,.45);box-shadow:0 0 22px rgba(240,201,70,.18) inset;background:#040810;}
+.sc.chamber-card .sc-face img{object-fit:contain;background:#040810;width:100%;height:100%;}
+.sc.chamber-card.flipped .sc-face::after{content:'Tap to flip back';position:absolute;bottom:0;left:0;right:0;padding:4px;background:rgba(0,0,0,.55);font-size:.48rem;font-family:'Nunito Sans',sans-serif;font-weight:700;text-align:center;color:rgba(240,201,70,.8);letter-spacing:.06em;text-transform:uppercase;opacity:0;transition:opacity .25s;}
 .sc.chamber-card.flipped:hover .sc-face::after{opacity:1}
-
 .sc.entry{animation:cardIn .45s cubic-bezier(.34,1.3,.64,1) both}
 @keyframes cardIn{from{transform:translateY(40px) scale(.72);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
-
 .sc.revealed.rarity-common{filter:drop-shadow(0 0 5px rgba(138,142,168,.5))}
 .sc.revealed.rarity-uncommon{filter:drop-shadow(0 0 7px rgba(92,184,92,.65));animation:uncommongl 2s ease-in-out infinite alternate}
 .sc.revealed.rarity-rare{filter:drop-shadow(0 0 10px rgba(46,140,232,.75))}
@@ -421,7 +230,6 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 @keyframes uncommongl{from{filter:drop-shadow(0 0 4px rgba(92,184,92,.5))}to{filter:drop-shadow(0 0 14px rgba(92,184,92,.95))}}
 @keyframes zengl{from{filter:drop-shadow(0 0 8px rgba(180,77,223,.7))}to{filter:drop-shadow(0 0 22px rgba(180,77,223,1))}}
 @keyframes chambergl{from{filter:drop-shadow(0 0 10px rgba(240,201,70,.6))}to{filter:drop-shadow(0 0 26px rgba(240,201,70,1))}}
-
 .rarity-ribbon{position:absolute;bottom:0;left:0;right:0;padding:3px 4px;font-size:.48rem;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:.06em;opacity:0;transition:opacity .3s .3s;z-index:5}
 .sc.revealed .rarity-ribbon{opacity:1}
 .rarity-ribbon.r-common{background:rgba(138,142,168,.85);color:#fff}
@@ -460,7 +268,7 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
         <img src="https://raw.githubusercontent.com/zolodio/Avatar-TCG-Database/main/SMLOGO.png" alt="Avatar Quick Strike" style="width:33%;height:auto;display:inline-block;vertical-align:middle">
         <img src="https://raw.githubusercontent.com/zolodio/Avatar-TCG-Database/main/LGLOGO.png" alt="Avatar Quick Strike" style="width:33%;height:auto;display:inline-block;vertical-align:middle;filter:drop-shadow(0 0 8px white)">
       </div>
-      <div style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--txt3);font-weight:400;letter-spacing:.25em;text-transform:uppercase;text-align:center;margin-top:6px">Pack Builder</div>
+      <div style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--zen);font-weight:700;letter-spacing:.25em;text-transform:uppercase;text-align:center;margin-top:6px">Pack Builder</div>
     </div>
     <div class="sec-lbl">1 — Choose Booster Pack</div>
     <div class="pt-row" id="pt-row"></div>
@@ -541,6 +349,7 @@ function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active')}
 function toast(msg,d=2300){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d)}
 
+// ── SHARE LINK encoding (AQS2) ─────────────────────────────────────────────
 function encPack(ptId,cards){
   const o={p:ptId,c:cards.map(c=>c.number),img:customPackImageUrl||''};
   try{return 'AQS2'+btoa(unescape(encodeURIComponent(JSON.stringify(o))))}catch(e){return null}
@@ -554,6 +363,51 @@ function decPack(code){
     return o;
   }catch(e){return null}
 }
+
+// ── DIGITAL REDEMPTION CODE (AQS3) ────────────────────────────────────────
+// Payload structure is server-ready: includes opened_at timestamp,
+// source tag, and a simple checksum for integrity verification.
+// A real backend would validate the checksum against a secret key
+// and track used checksums to prevent double-redemption.
+function simpleChecksum(str){
+  // djb2-style hash — lightweight, reversible on server with same algo
+  let hash=5381;
+  for(let i=0;i<str.length;i++){
+    hash=((hash<<5)+hash)+str.charCodeAt(i);
+    hash=hash&hash; // keep 32-bit
+  }
+  return Math.abs(hash).toString(36);
+}
+function genRedemptionCode(cards, ptId){
+  const openedAt = Date.now();
+  const cardNumbers = cards.map(c=>c.number);
+  const checksumSource = cardNumbers.join(',') + '|' + openedAt + '|' + ptId;
+  const payload = {
+    v: 1,                        // schema version — bump when format changes
+    p: ptId,                     // pack type id
+    c: cardNumbers,              // card numbers
+    s: 'digital',                // source: always "digital" for booster-opened cards
+    t: openedAt,                 // unix ms timestamp
+    ck: simpleChecksum(checksumSource)  // integrity checksum
+  };
+  try{
+    return 'AQS3' + btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  }catch(e){return null}
+}
+// Exposed for the database site to call: decodes and returns payload or null
+function decodeRedemptionCode(code){
+  try{
+    const raw = code.startsWith('AQS3') ? code : null;
+    if(!raw) return null;
+    const o = JSON.parse(decodeURIComponent(escape(atob(raw.slice(4)))));
+    if(!o.v||!o.p||!Array.isArray(o.c)||!o.s||!o.t||!o.ck) return null;
+    // Re-verify checksum
+    const checksumSource = o.c.join(',') + '|' + o.t + '|' + o.p;
+    if(simpleChecksum(checksumSource) !== o.ck) return null;
+    return o;
+  }catch(e){return null}
+}
+
 function isValidForSlot(card, slotIndex){
   const num = parseInt(card.number, 10);
   if (isNaN(num)) return false;
@@ -675,11 +529,8 @@ function buildPkGrid(){
 
 function randomize(){
   const byRarity=r=>allCards.filter(c=>{const n=parseInt(c.number,10);return n>=1&&n<=175&&c.rarity===r;});
-  const commons   =byRarity('common');
-  const uncommons =byRarity('uncommon');
-  const rares     =byRarity('rare');
-  const zenementals=byRarity('zenemental');
-  const chambers  =allCards.filter(c=>{const n=parseInt(c.number,10);return n>=176&&n<=235;});
+  const commons=byRarity('common'),uncommons=byRarity('uncommon'),rares=byRarity('rare'),zenementals=byRarity('zenemental');
+  const chambers=allCards.filter(c=>{const n=parseInt(c.number,10);return n>=176&&n<=235;});
   const pick=arr=>arr.length?arr[Math.floor(Math.random()*arr.length)]:null;
   for(let i=0;i<5;i++) slots[i]=pick(commons);
   for(let i=5;i<8;i++) slots[i]=pick(uncommons);
@@ -688,108 +539,61 @@ function randomize(){
   slots[9]=pick(chambers);
 }
 
-// ── PACK VISUAL ─────────────────────────────────────────────────────────────
+// PACK VISUAL
 function buildPackVisual(pt, cards=[]){
   const syms=SYMS[pt.id]||['✨','⭐','💫'];
   const artSrc=(pt.id==='CUSTOM'&&customPackImageUrl)
     ?customPackImageUrl
     :'https://raw.githubusercontent.com/zolodio/Avatar-TCG-Database/main/BSTR001.jpg';
-
-  /*
-    cards-stack lives at top:38px in pack-container — 22px above pack-body.
-    pack-top (z:5) covers that 22px while sealed.
-    The torn clip-path cuts pack-top's bottom to a jagged ~48px edge,
-    exposing a sliver of card back before the top flies.
-    5 card backs stacked; after pull-btn appears they fan vertically.
-  */
-  const firstCard = cards[0];
-  const cardBackSrc = (firstCard && firstCard.type === 'chamber' && firstCard.backImageLink)
-    ? firstCard.backImageLink
-    : CARDBACK;
-  const stackHtml = Array(5).fill(0).map(()=>
-    `<div class="stack-card"><img src="${escH(cardBackSrc)}" alt=""></div>`
-  ).join('');
-
+  const firstCard=cards[0];
+  const cardBackSrc=(firstCard&&firstCard.type==='chamber'&&firstCard.backImageLink)?firstCard.backImageLink:CARDBACK;
+  const stackHtml=Array(5).fill(0).map(()=>`<div class="stack-card"><img src="${escH(cardBackSrc)}" alt=""></div>`).join('');
   return `
 <div class="pack-wrap floating" id="pack-wrap">
   <div class="pack-container" id="pack-container">
-
-    <!-- z:5 — tears away -->
     <div class="pack-top" id="pack-top">
       <div class="swipe-arrows"><span>&#8592;</span><span>&#8594;</span></div>
       <img src="${escH(artSrc)}" style="position:absolute;top:0;left:0;width:100%;height:340px;object-fit:cover;" onerror="this.style.display='none'">
-      <div class="p-foil"></div>
-      <div class="p-glow"></div>
+      <div class="p-foil"></div><div class="p-glow"></div>
     </div>
-
-    <!-- z:2 — card backs, peek 22px above pack-body under pack-top until torn -->
     <div class="cards-stack" id="cards-stack">${stackHtml}</div>
-
-    <!-- z:3 — foil-wrapper edge overlay above card stack, transparent interior -->
     <div class="pack-body-frame"></div>
-
-    <!-- z:1 — pack body art/background -->
     <div class="pack-body" style="background:linear-gradient(160deg,${pt.c1} 0%,${pt.c2} 50%,${pt.c3} 100%)">
-      <div class="p-art">
-        <img src="${escH(artSrc)}" style="position:absolute;top:-60px;left:0;width:100%;height:340px;object-fit:cover;" onerror="this.style.display='none'">
-      </div>
-      <div class="p-foil"></div>
-      <div class="p-glow"></div>
+      <div class="p-art"><img src="${escH(artSrc)}" style="position:absolute;top:-60px;left:0;width:100%;height:340px;object-fit:cover;" onerror="this.style.display='none'"></div>
+      <div class="p-foil"></div><div class="p-glow"></div>
       <div class="p-circle" style="width:200px;height:200px;top:-60px;right:-80px;background:${pt.acc}"></div>
       <div class="p-circle" style="width:160px;height:160px;bottom:-40px;left:-65px;background:${pt.acc}"></div>
-      <div class="p-sym s1">${syms[0]}</div>
-      <div class="p-sym s2">${syms[1]}</div>
-      <div class="p-sym s3">${syms[2]}</div>
+      <div class="p-sym s1">${syms[0]}</div><div class="p-sym s2">${syms[1]}</div><div class="p-sym s3">${syms[2]}</div>
       <div class="p-center-icon">${pt.icon}</div>
     </div>
-
   </div>
 </div>
 <div class="hint-txt" id="hint-txt">&#8592; Swipe pack top to tear &#8594;</div>`;
 }
 
-// ── SWIPE-TO-TEAR ────────────────────────────────────────────────────────────
+// SWIPE-TO-TEAR
 function addSwipeTear(){
   const packTop=document.getElementById('pack-top');
   if(!packTop)return;
   let startX=null, active=false;
-
-  function onStart(x){
-    if(phase!=='sealed')return;
-    startX=x; active=true;
-    packTop.style.transition='none';
-    const wrap=document.getElementById('pack-wrap');
-    if(wrap)wrap.classList.remove('floating');
-  }
-  function onMove(x){
-    if(!active||startX===null)return;
-    const dx=x-startX;
-    packTop.style.transform=`translateX(${dx*.75}px) rotate(${dx*.07}deg)`;
-  }
+  function onStart(x){if(phase!=='sealed')return;startX=x;active=true;packTop.style.transition='none';const wrap=document.getElementById('pack-wrap');if(wrap)wrap.classList.remove('floating');}
+  function onMove(x){if(!active||startX===null)return;const dx=x-startX;packTop.style.transform=`translateX(${dx*.75}px) rotate(${dx*.07}deg)`;}
   function onEnd(x){
-    if(!active||startX===null)return;
-    active=false;
-    const dx=x-startX;
+    if(!active||startX===null)return;active=false;const dx=x-startX;
     if(Math.abs(dx)>55){
-      packTop.style.transition='';
-      packTop.style.transform='';
-      phase='shaking';
+      packTop.style.transition='';packTop.style.transform='';phase='shaking';
       const wrap=document.getElementById('pack-wrap');
       if(wrap){wrap.classList.remove('floating');wrap.classList.add('shaking');}
       setTimeout(doTear,400);
     } else {
-      packTop.style.transition='transform .35s cubic-bezier(.4,0,.2,1)';
-      packTop.style.transform='';
-      const wrap=document.getElementById('pack-wrap');
-      if(wrap)wrap.classList.add('floating');
+      packTop.style.transition='transform .35s cubic-bezier(.4,0,.2,1)';packTop.style.transform='';
+      const wrap=document.getElementById('pack-wrap');if(wrap)wrap.classList.add('floating');
     }
     startX=null;
   }
-
   packTop.addEventListener('touchstart',e=>{onStart(e.touches[0].clientX);},{passive:true});
   packTop.addEventListener('touchmove',e=>{onMove(e.touches[0].clientX);},{passive:true});
   packTop.addEventListener('touchend',e=>{onEnd(e.changedTouches[0].clientX);});
-
   const onMouseMove=e=>{if(active)onMove(e.clientX);};
   const onMouseUp=e=>{if(active)onEnd(e.clientX);};
   packTop.addEventListener('mousedown',e=>{e.preventDefault();onStart(e.clientX);});
@@ -797,44 +601,32 @@ function addSwipeTear(){
   document.addEventListener('mouseup',onMouseUp);
 }
 
-// ── EXPERIENCE FLOW ───────────────────────────────────────────────────────────
+// EXPERIENCE FLOW
 function startExp(data){
-  packData=data; flipped.clear(); phase='sealed';
+  packData=data;flipped.clear();phase='sealed';
   const pt=PACKS.find(p=>p.id===data.packTypeId)||PACKS[0];
   if(data.customImg)customPackImageUrl=data.customImg;
-  const stage=$('pack-stage');
-  const spread=$('spread-stage');
-  stage.style.display=''; spread.style.display='none';
-  stage.innerHTML=buildPackVisual(pt, data.cards);
-  setTimeout(addSwipeTear, 60);
+  const stage=$('pack-stage'),spread=$('spread-stage');
+  stage.style.display='';spread.style.display='none';
+  stage.innerHTML=buildPackVisual(pt,data.cards);
+  setTimeout(addSwipeTear,60);
   showScreen('s-exp');
 }
 
 function doTear(){
   phase='opening';
   const pt=$('pack-top');
-  if(pt){
-    pt.classList.add('torn');
-    // Brief pause so the jagged edge is visible — card top shows through the gap
-    requestAnimationFrame(()=>requestAnimationFrame(()=>pt.classList.add('fly')));
-  }
-  const hint=$('hint-txt');
-  if(hint)hint.style.display='none';
-  // Pull Cards button appears after pack-top has flown away
+  if(pt){pt.classList.add('torn');requestAnimationFrame(()=>requestAnimationFrame(()=>pt.classList.add('fly')));}
+  const hint=$('hint-txt');if(hint)hint.style.display='none';
   setTimeout(()=>{
-    const stage=$('pack-stage');
-    if(!stage)return;
+    const stage=$('pack-stage');if(!stage)return;
     const btn=document.createElement('button');
-    btn.className='pull-btn'; btn.id='pull-btn';
+    btn.className='pull-btn';btn.id='pull-btn';
     btn.innerHTML='<i class="fas fa-hand-sparkles"></i> Pull Cards!';
     stage.appendChild(btn);
     btn.addEventListener('click',pullCards,{once:true});
     phase='pulling';
-    // Fan the card stack a beat after the button appears
-    setTimeout(()=>{
-      const stack=document.getElementById('cards-stack');
-      if(stack) stack.classList.add('fanned');
-    }, 300);
+    setTimeout(()=>{const stack=document.getElementById('cards-stack');if(stack)stack.classList.add('fanned');},300);
   },750);
 }
 
@@ -842,8 +634,7 @@ function pullCards(){
   if(phase!=='pulling')return;
   phase='spread';
   $('pack-stage').style.display='none';
-  const spread=$('spread-stage');
-  spread.style.display='flex';
+  const spread=$('spread-stage');spread.style.display='flex';
   buildSpread();
 }
 
@@ -863,33 +654,33 @@ function buildSpread(){
     <div class="spread-footer">
       <div class="done-acts" id="done-acts">
         <button class="btn btn-sec" id="open-again"><i class="fas fa-redo"></i> Open Another</button>
-        <button class="btn btn-out" id="share-result"><i class="fas fa-share"></i> Share This Pack</button>
+        <button class="btn btn-out" id="share-result"><i class="fas fa-share"></i> Share Pack</button>
+      </div>
+      <div class="digital-claim-panel" id="digital-claim-panel">
+        <div class="digital-claim-hd"><i class="fas fa-layer-group"></i> Add to Digital Collection</div>
+        <div class="digital-claim-sub">Copy this redemption code and paste it into the TCG Database site to add these cards to your digital collection.</div>
+        <div class="code-display">
+          <div class="code-box" id="redemption-code-display">—</div>
+          <button class="btn-copy-code" id="btn-copy-redemption"><i class="fas fa-copy"></i> Copy</button>
+        </div>
+        <div class="digital-claim-note">Code encodes pack type, card numbers, timestamp and checksum. The database site verifies it before adding cards.</div>
       </div>
     </div>`;
 
   const row=$('cards-row');
-
   cards.forEach((card,i)=>{
     const isChamber=card.type==='chamber';
     const el=document.createElement('div');
     el.className=`sc entry${isChamber?' chamber-card':''}`;
     el.style.animationDelay=(i*45)+'ms';
     el.dataset.idx=i;
-
     const backSrc=(isChamber&&card.backImageLink)?card.backImageLink:CARDBACK;
-
     el.innerHTML=`
       <div class="sc-inner">
-        <div class="sc-back">
-          <img src="${escH(backSrc)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">
-        </div>
+        <div class="sc-back"><img src="${escH(backSrc)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div>
         <div class="sc-face">
-          ${card.imageLink
-            ?`<img src="${escH(card.imageLink)}" alt="${escH(card.name)}" loading="lazy">`
-            :`<div class="sc-face-ph">?</div>`}
-          <div class="rarity-ribbon r-${card.type==='chamber'?'chamber':card.rarity}">
-            ${card.type==='chamber'?'Chamber':card.rarity}
-          </div>
+          ${card.imageLink?`<img src="${escH(card.imageLink)}" alt="${escH(card.name)}" loading="lazy">`:`<div class="sc-face-ph">?</div>`}
+          <div class="rarity-ribbon r-${card.type==='chamber'?'chamber':card.rarity}">${card.type==='chamber'?'Chamber':card.rarity}</div>
         </div>
       </div>`;
     el.addEventListener('click',()=>flipCard(el,card,i));
@@ -902,33 +693,25 @@ function buildSpread(){
 
 function flipCard(el,card,i){
   const isChamber=card.type==='chamber';
-
   if(isChamber){
-    if(el.classList.contains('flipped')){
-      el.classList.remove('flipped');
-    } else {
+    if(el.classList.contains('flipped')){el.classList.remove('flipped');}
+    else{
       el.classList.add('flipped');
       if(!flipped.has(i)){
         flipped.add(i);
-        setTimeout(()=>{
-          el.classList.add('revealed','type-chamber');
-          const r=el.getBoundingClientRect();
-          burst(r.left+r.width/2,r.top+r.height/2,'promo');
-        },310);
+        setTimeout(()=>{el.classList.add('revealed','type-chamber');const r=el.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,'promo');},310);
         updateRevCount();
       }
     }
     return;
   }
-
   if(flipped.has(i))return;
   flipped.add(i);
   el.classList.add('flipped');
   setTimeout(()=>{
     el.classList.add('revealed',`rarity-${card.rarity}`);
     if(['uncommon','rare','zenemental','promo'].includes(card.rarity)){
-      const r=el.getBoundingClientRect();
-      burst(r.left+r.width/2,r.top+r.height/2,card.rarity);
+      const r=el.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,card.rarity);
     }
   },310);
   updateRevCount();
@@ -938,8 +721,29 @@ function updateRevCount(){
   const rc=$('rev-count');
   if(rc)rc.textContent=flipped.size;
   if(packData&&flipped.size===packData.cards.length){
-    setTimeout(()=>{const d=$('done-acts');if(d)d.classList.add('show')},700);
+    // All cards revealed — show done actions and generate redemption code
+    setTimeout(()=>{
+      const d=$('done-acts');if(d)d.classList.add('show');
+      showDigitalClaimPanel();
+    },700);
   }
+}
+
+function showDigitalClaimPanel(){
+  const panel=$('digital-claim-panel');
+  if(!panel||!packData)return;
+  const code=genRedemptionCode(packData.cards, packData.packTypeId);
+  if(!code)return;
+  $('redemption-code-display').textContent=code;
+  panel.classList.add('show');
+  // Wire up copy button
+  $('btn-copy-redemption').addEventListener('click',()=>{
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(code).then(()=>toast('Redemption code copied!'));
+    } else {
+      prompt('Copy this redemption code:',code);
+    }
+  });
 }
 
 // CONFETTI
@@ -948,41 +752,25 @@ const ctx=cnv.getContext('2d');
 let particles=[];let cfRunning=false;
 function resizeCnv(){cnv.width=window.innerWidth;cnv.height=window.innerHeight}
 resizeCnv();window.addEventListener('resize',resizeCnv);
-
 const BURST_COLORS={
   uncommon:['#5cb85c','#7dd87d','#ffffff','#3db86c','#b8f0b8'],
   rare:['#2e8ce8','#3da5ff','#ffffff','#4a7dff','#87ceeb'],
   zenemental:['#b44ddf','#d16bff','#ffffff','#e8532e','#f0c946','#9b6dff'],
   promo:['#e8b632','#ffd04a','#ffffff','#f0c946','#e8532e'],
 };
-
 function burst(cx,cy,rarity){
   const cols=BURST_COLORS[rarity]||['#ffffff','#b44ddf'];
   const count=rarity==='zenemental'?90:rarity==='uncommon'?40:55;
   for(let i=0;i<count;i++){
-    const angle=Math.random()*Math.PI*2;
-    const spd=3+Math.random()*10;
-    particles.push({x:cx,y:cy,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd-5,
-      col:cols[Math.floor(Math.random()*cols.length)],
-      w:5+Math.random()*9,h:3+Math.random()*5,
-      angle:Math.random()*Math.PI*2,spin:(Math.random()-.5)*.28,
-      grav:.14+Math.random()*.1,alpha:1,
-      shape:Math.random()>.55?'circle':'rect'});
+    const angle=Math.random()*Math.PI*2,spd=3+Math.random()*10;
+    particles.push({x:cx,y:cy,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd-5,col:cols[Math.floor(Math.random()*cols.length)],w:5+Math.random()*9,h:3+Math.random()*5,angle:Math.random()*Math.PI*2,spin:(Math.random()-.5)*.28,grav:.14+Math.random()*.1,alpha:1,shape:Math.random()>.55?'circle':'rect'});
   }
   if(!cfRunning){cfRunning=true;requestAnimationFrame(drawCf)}
 }
-
 function drawCf(){
   ctx.clearRect(0,0,cnv.width,cnv.height);
   particles=particles.filter(p=>p.alpha>.04&&p.y<cnv.height+40);
-  particles.forEach(p=>{
-    p.x+=p.vx;p.y+=p.vy;p.vy+=p.grav;p.vx*=.992;
-    p.angle+=p.spin;p.alpha=Math.max(0,p.alpha-.015);
-    ctx.save();ctx.globalAlpha=p.alpha;ctx.translate(p.x,p.y);ctx.rotate(p.angle);ctx.fillStyle=p.col;
-    if(p.shape==='circle'){ctx.beginPath();ctx.arc(0,0,p.w/2,0,Math.PI*2);ctx.fill();}
-    else{ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);}
-    ctx.restore();
-  });
+  particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=p.grav;p.vx*=.992;p.angle+=p.spin;p.alpha=Math.max(0,p.alpha-.015);ctx.save();ctx.globalAlpha=p.alpha;ctx.translate(p.x,p.y);ctx.rotate(p.angle);ctx.fillStyle=p.col;if(p.shape==='circle'){ctx.beginPath();ctx.arc(0,0,p.w/2,0,Math.PI*2);ctx.fill();}else{ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);}ctx.restore();});
   if(particles.length>0)requestAnimationFrame(drawCf);else cfRunning=false;
 }
 
@@ -1031,8 +819,7 @@ async function init(){
     const data={packTypeId:packType,cards,customImg:customPackImageUrl};
     const code=encPack(packType,cards);
     if(code)history.replaceState(null,'','#'+code);
-    startExp(data);
-    setupExpBtns();
+    startExp(data);setupExpBtns();
   });
 
   $('btn-start').addEventListener('click',()=>{
@@ -1044,16 +831,14 @@ async function init(){
     startExp(data);setupExpBtns();
   });
   $('btn-share-setup').addEventListener('click',()=>{
-    const cards=slots.filter(Boolean);
-    if(cards.length<10)return;
+    const cards=slots.filter(Boolean);if(cards.length<10)return;
     const code=encPack(packType,cards);
     const url=location.href.split('#')[0]+'#'+code;
     if(navigator.clipboard){navigator.clipboard.writeText(url).then(()=>toast('Share link copied!'));}
     else{prompt('Copy:',url);}
   });
   $('btn-load').addEventListener('click',()=>{
-    const inp=$('code-inp').value.trim();
-    if(!inp)return;
+    const inp=$('code-inp').value.trim();if(!inp)return;
     const dec=decPack(inp);
     if(!dec){toast('Invalid code or link');return;}
     const cards=dec.c.map(n=>allCards.find(c=>c.number===n)).filter(Boolean);
@@ -1062,10 +847,8 @@ async function init(){
     startExp({packTypeId:dec.p,cards,customImg:dec.img||''});setupExpBtns();
   });
   $('code-inp').addEventListener('keydown',e=>{if(e.key==='Enter')$('btn-load').click()});
-
   $('btn-apply-img').addEventListener('click',applyCustomImg);
   $('custom-img-inp').addEventListener('keydown',e=>{if(e.key==='Enter')applyCustomImg()});
-
   setupExpBtns();
   showScreen('s-setup');
 }
@@ -1074,12 +857,7 @@ function applyCustomImg(){
   const url=$('custom-img-inp').value.trim();
   if(!url){customPackImageUrl='';$('custom-img-preview').style.display='none';toast('Image URL cleared');return;}
   const img=new Image();
-  img.onload=()=>{
-    customPackImageUrl=url;
-    $('custom-img-thumb').src=url;
-    $('custom-img-preview').style.display='flex';
-    toast('Booster art applied!');
-  };
+  img.onload=()=>{customPackImageUrl=url;$('custom-img-thumb').src=url;$('custom-img-preview').style.display='flex';toast('Booster art applied!');};
   img.onerror=()=>{toast('Could not load that image URL');};
   img.src=url;
 }

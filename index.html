@@ -143,7 +143,7 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
   width:200px;
   height:60px;
   position:relative;
-  z-index:5;  /* above frame(3), cards(2), body(1) */
+  z-index:3;
   border-radius:12px 12px 0 0;
   overflow:hidden;
   transform-origin:top center;
@@ -172,60 +172,30 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 }
 
 /*
-  ── Card stack: absolutely inside pack-container, starts at top:38px.
-  That means 22px of cards sit behind pack-top (z:5).
-  When pack-top gets the torn clip-path, its jagged bottom edge (~48px) exposes
-  a sliver of card top — visible BEFORE the top flies away.
-  After top flies, the full 22px peek is visible above pack-body opening.
+  ── Card inside pack: sits at the top of pack-body, full width.
+  pack-body has overflow:hidden, so the card is clipped exactly like
+  a real card inside a foil sleeve. After the top tears off, the top
+  of the card back is revealed — same width as the pack opening.
 */
-.cards-stack{
+.card-in-pack{
   position:absolute;
-  top:38px;
+  top:0;
   left:0;
-  width:200px;
+  width:100%;
+  /* 5:7 ratio card fills exactly the pack body height (200×280) */
+  height:100%;
   z-index:2;
+  opacity:0;
+  transition:opacity .4s ease .3s;
   pointer-events:none;
 }
-.stack-card{
-  position:absolute;
-  top:0; left:0;
-  width:200px;
-  height:280px;
-  overflow:hidden;
-  border-radius:3px 3px 0 0;
-  transition:transform .65s cubic-bezier(.4,0,.2,1);
-  box-shadow:0 -2px 10px rgba(0,0,0,.55);
-}
-.stack-card:nth-child(1){z-index:10}
-.stack-card:nth-child(2){z-index:9}
-.stack-card:nth-child(3){z-index:8}
-.stack-card:nth-child(4){z-index:7}
-.stack-card:nth-child(5){z-index:6}
-.stack-card img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
-/* Fan: each card below the top shifts down into the pack, suggesting depth */
-.cards-stack.fanned .stack-card:nth-child(2){transform:translateY(5px)}
-.cards-stack.fanned .stack-card:nth-child(3){transform:translateY(10px)}
-.cards-stack.fanned .stack-card:nth-child(4){transform:translateY(15px)}
-.cards-stack.fanned .stack-card:nth-child(5){transform:translateY(20px)}
-
-/*
-  ── Pack-body frame: foil-wrapper edge overlay above the card stack.
-  Transparent interior so card backs show through; border/shadow give
-  the illusion the foil is still wrapped around the card edges.
-*/
-.pack-body-frame{
-  position:absolute;
-  top:60px;
-  left:0;
-  width:200px;
-  height:280px;
-  z-index:3;
-  border-radius:0 0 12px 12px;
-  border:1px solid rgba(255,255,255,.1);
-  border-top:none;
-  box-shadow:inset 2px 0 6px rgba(0,0,0,.25),inset -2px 0 6px rgba(0,0,0,.25),inset 0 -4px 12px rgba(0,0,0,.3);
-  pointer-events:none;
-  background:transparent;
+.card-in-pack.show{opacity:1}
+.card-in-pack img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:top center;
+  display:block;
 }
 
 .p-art{position:absolute;inset:0}
@@ -696,25 +666,18 @@ function buildPackVisual(pt, cards=[]){
     :'https://raw.githubusercontent.com/zolodio/Avatar-TCG-Database/main/BSTR001.jpg';
 
   /*
-    cards-stack lives at top:38px in pack-container — 22px above pack-body.
-    pack-top (z:5) covers that 22px while sealed.
-    The torn clip-path cuts pack-top's bottom to a jagged ~48px edge,
-    exposing a sliver of card back before the top flies.
-    5 card backs stacked; after pull-btn appears they fan vertically.
+    Single card back inside the pack body — same width as pack (200px).
+    pack-body has overflow:hidden so it clips it exactly like a real card
+    in a foil sleeve. Fades in after the top tears off.
   */
   const firstCard = cards[0];
   const cardBackSrc = (firstCard && firstCard.type === 'chamber' && firstCard.backImageLink)
     ? firstCard.backImageLink
     : CARDBACK;
-  const stackHtml = Array(5).fill(0).map(()=>
-    `<div class="stack-card"><img src="${escH(cardBackSrc)}" alt=""></div>`
-  ).join('');
 
   return `
 <div class="pack-wrap floating" id="pack-wrap">
   <div class="pack-container" id="pack-container">
-
-    <!-- z:5 — tears away -->
     <div class="pack-top" id="pack-top">
       <div class="swipe-arrows"><span>&#8592;</span><span>&#8594;</span></div>
       <img src="${escH(artSrc)}" style="position:absolute;top:0;left:0;width:100%;height:340px;object-fit:cover;" onerror="this.style.display='none'">
@@ -722,14 +685,11 @@ function buildPackVisual(pt, cards=[]){
       <div class="p-glow"></div>
     </div>
 
-    <!-- z:2 — card backs, peek 22px above pack-body under pack-top until torn -->
-    <div class="cards-stack" id="cards-stack">${stackHtml}</div>
-
-    <!-- z:3 — foil-wrapper edge overlay above card stack, transparent interior -->
-    <div class="pack-body-frame"></div>
-
-    <!-- z:1 — pack body art/background -->
     <div class="pack-body" style="background:linear-gradient(160deg,${pt.c1} 0%,${pt.c2} 50%,${pt.c3} 100%)">
+      <!-- Card back sits inside body at z:2, revealed when top tears off -->
+      <div class="card-in-pack" id="card-in-pack">
+        <img src="${escH(cardBackSrc)}" alt="">
+      </div>
       <div class="p-art">
         <img src="${escH(artSrc)}" style="position:absolute;top:-60px;left:0;width:100%;height:340px;object-fit:cover;" onerror="this.style.display='none'">
       </div>
@@ -742,7 +702,6 @@ function buildPackVisual(pt, cards=[]){
       <div class="p-sym s3">${syms[2]}</div>
       <div class="p-center-icon">${pt.icon}</div>
     </div>
-
   </div>
 </div>
 <div class="hint-txt" id="hint-txt">&#8592; Swipe pack top to tear &#8594;</div>`;
@@ -815,12 +774,15 @@ function doTear(){
   const pt=$('pack-top');
   if(pt){
     pt.classList.add('torn');
-    // Brief pause so the jagged edge is visible — card top shows through the gap
     requestAnimationFrame(()=>requestAnimationFrame(()=>pt.classList.add('fly')));
   }
   const hint=$('hint-txt');
   if(hint)hint.style.display='none';
-  // Pull Cards button appears after pack-top has flown away
+  // Reveal card back inside the body as top flies away
+  setTimeout(()=>{
+    const cip=document.getElementById('card-in-pack');
+    if(cip)cip.classList.add('show');
+  },320);
   setTimeout(()=>{
     const stage=$('pack-stage');
     if(!stage)return;
@@ -830,12 +792,7 @@ function doTear(){
     stage.appendChild(btn);
     btn.addEventListener('click',pullCards,{once:true});
     phase='pulling';
-    // Fan the card stack a beat after the button appears
-    setTimeout(()=>{
-      const stack=document.getElementById('cards-stack');
-      if(stack) stack.classList.add('fanned');
-    }, 300);
-  },750);
+  },720);
 }
 
 function pullCards(){

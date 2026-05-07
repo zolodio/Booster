@@ -843,7 +843,7 @@ function buildSpread(){
     el.className=`sc entry${isCh?' chamber-card':''}`;
     el.style.animationDelay=(i*45)+'ms';
     el.dataset.idx=i;
-    const backSrc=isCh?CHAMBER_BACK:CARDBACK;
+    const backSrc = isCh ? (card.backImageLink || CHAMBER_BACK) : CARDBACK;
     el.innerHTML=`<div class="sc-inner">
       <div class="sc-back"><img src="${escH(backSrc)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:1;"></div>
       <div class="sc-face">
@@ -865,7 +865,14 @@ function flipCard(el,card,i){
     el.classList.toggle('flipped');
     if(!flipped.has(i)){
       flipped.add(i);
-      setTimeout(()=>{el.classList.add('revealed','type-chamber');const r=el.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,'promo')},310);
+      // Swap hiding image → real chamber back, timed to land during flip
+      const backImg = el.querySelector('.sc-back img');
+      if(backImg) setTimeout(()=>{ backImg.src = CHAMBER_BACK; }, 310);
+      setTimeout(()=>{
+        el.classList.add('revealed','type-chamber');
+        const r=el.getBoundingClientRect();
+        burst(r.left+r.width/2,r.top+r.height/2,'promo');
+      },310);
       updateRevCount();
     }
     return;

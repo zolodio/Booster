@@ -1135,9 +1135,50 @@ function adminLaunchPack(){
 }
 
 // ═══════════════════════════════════════════
+// ACCESS CONTROL
+// ═══════════════════════════════════════════
+const REDIRECT_URL = 'https://zolodio.github.io/Avatar-TCG-Database/';
+const ACCESS_TOKEN_KEY = 'aqtcg_access_v1';   // sessionStorage key set by game site
+const ACCESS_TOKEN_VAL = 'PLAYGRANT';          // must match what game site sets
+
+// Check whether this visit is legitimately authorised.
+// Returns true if:
+//   (a) a valid AQS4 / AQS2 pack hash is present in the URL, OR
+//   (b) the game site planted the session access token before redirecting here, OR
+//   (c) the visitor is opening an admin session (?admin in the query string)
+function isAuthorisedVisit(){
+  // Admin query string – password still required later, but we let it through here
+  if(location.search.includes('admin')) return true;
+
+  // Valid signed pack hash in the URL fragment
+  const hash = location.hash.slice(1);
+  if(hash.startsWith('AQS4') || hash.startsWith('AQS2')) return true;
+
+  // Session token planted by the game site on redirect
+  const token = sessionStorage.getItem(ACCESS_TOKEN_KEY);
+  if(token === ACCESS_TOKEN_VAL) return true;
+
+  return false;
+}
+
+function redirectUnauthorised(){
+  // Small delay so the loading spinner appears briefly (avoids flash)
+  setTimeout(()=>{ location.replace(REDIRECT_URL); }, 800);
+}
+
+// ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
 async function init(){
+  // ── Gate: reject visitors with no valid pack / token ──────────────────
+  if(!isAuthorisedVisit()){
+    // Show a brief "redirecting" message rather than a blank screen
+    showScreen('s-loading');
+    document.querySelector('#s-loading .ring-text').textContent = 'Redirecting…';
+    redirectUnauthorised();
+    return;
+  }
+
   // Admin mode
   if(location.search.includes('admin')){
     showScreen('s-loading');
@@ -1148,6 +1189,10 @@ async function init(){
   }
 
   showScreen('s-loading');
+
+  // Consume the session token now that we are past the gate —
+  // so refreshing the page without a hash also redirects away.
+  sessionStorage.removeItem(ACCESS_TOKEN_KEY);
 
   // Load card database
   try{
@@ -1178,26 +1223,23 @@ async function init(){
     }
   }
 
-  // No valid pack → generate demo
+  // No valid pack after auth check — shouldn't happen normally,
+  // but if the hash is malformed, redirect rather than demo.
   if(!packPayload){
-    if(allCards.length>0){
-      const cards=generateRandomCards();
-      if(cards.length>=10){
-        const id=genUUID();
-        const code=encAQS4(id,'BSTR001',cards,'demo');
-        packPayload={v:1,id,p:'BSTR001',c:cards.map(c=>c.number),src:'demo',t:Date.now()};
-        if(code)history.replaceState(null,'','#'+code);
-      } else {
-        showScreen('s-invalid');return;
-      }
-    } else {
-      showScreen('s-invalid');return;
-    }
+    showScreen('s-loading');
+    document.querySelector('#s-loading .ring-text').textContent = 'Invalid pack — redirecting…';
+    redirectUnauthorised();
+    return;
   }
 
   // Resolve card objects
   const cards=packPayload.c.map(n=>allCards.find(c=>c.number===n)).filter(Boolean);
-  if(cards.length===0){showScreen('s-invalid');return;}
+  if(cards.length===0){
+    showScreen('s-loading');
+    document.querySelector('#s-loading .ring-text').textContent = 'Pack data error — redirecting…';
+    redirectUnauthorised();
+    return;
+  }
 
   currentPack={...packPayload,cards};
 

@@ -228,7 +228,7 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 .adm-btn-danger:hover{background:rgba(224,72,72,.2)}
 
 /* Admin login overlay */
-#admin-login{position:fixed;inset:0;background:rgba(7,9,15,.97);z-index:1001;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:24px}
+#admin-login{display:none!important}
 .adm-login-box{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);padding:32px 28px;width:100%;max-width:360px;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
 .adm-login-icon{font-size:2.2rem;color:var(--bad);margin-bottom:4px}
 .adm-login-title{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;color:var(--txt)}
@@ -436,17 +436,7 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#000;color
 </div>
 
 <!-- ADMIN LOGIN -->
-<div id="admin-login">
-  <div class="adm-login-box">
-    <div class="adm-login-icon"><i class="fas fa-shield-halved"></i></div>
-    <div class="adm-login-title">Admin Access</div>
-    <div class="adm-login-sub">Enter the admin password to continue</div>
-    <input type="password" class="adm-pass-inp" id="adm-pass-inp" placeholder="••••••••" maxlength="32">
-    <button class="adm-btn adm-btn-pri" style="width:100%" onclick="checkAdminPass()"><i class="fas fa-unlock"></i> Unlock</button>
-    <div class="adm-pass-err" id="adm-pass-err"></div>
-    <a href="javascript:history.back()" style="font-size:.68rem;color:var(--txt3);text-decoration:none;margin-top:4px">← Go back</a>
-  </div>
-</div>
+
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>

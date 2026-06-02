@@ -1170,29 +1170,7 @@ function redirectUnauthorised(){
 // INIT
 // ═══════════════════════════════════════════
 async function init(){
-  // ── Gate: reject visitors with no valid pack / token ──────────────────
-  if(!isAuthorisedVisit()){
-    // Show a brief "redirecting" message rather than a blank screen
-    showScreen('s-loading');
-    document.querySelector('#s-loading .ring-text').textContent = 'Redirecting…';
-    redirectUnauthorised();
-    return;
-  }
-
-  // Admin mode
-  if(location.search.includes('admin')){
-    showScreen('s-loading');
-    try{const r=await fetch(CSV_URL);allCards=parseCSV(await r.text())}catch(e){console.warn('CSV:',e)}
-    $('s-loading').classList.remove('active');
-    initAdmin();
-    return;
-  }
-
   showScreen('s-loading');
-
-  // Consume the session token now that we are past the gate —
-  // so refreshing the page without a hash also redirects away.
-  sessionStorage.removeItem(ACCESS_TOKEN_KEY);
 
   // Load card database
   try{
@@ -1223,21 +1201,16 @@ async function init(){
     }
   }
 
-  // No valid pack after auth check — shouldn't happen normally,
-  // but if the hash is malformed, redirect rather than demo.
+  // No valid pack — show the invalid screen.
   if(!packPayload){
-    showScreen('s-loading');
-    document.querySelector('#s-loading .ring-text').textContent = 'Invalid pack — redirecting…';
-    redirectUnauthorised();
+    showScreen('s-invalid');
     return;
   }
 
   // Resolve card objects
   const cards=packPayload.c.map(n=>allCards.find(c=>c.number===n)).filter(Boolean);
   if(cards.length===0){
-    showScreen('s-loading');
-    document.querySelector('#s-loading .ring-text').textContent = 'Pack data error — redirecting…';
-    redirectUnauthorised();
+    showScreen('s-invalid');
     return;
   }
 
